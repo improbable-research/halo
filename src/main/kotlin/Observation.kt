@@ -12,7 +12,7 @@ class Observation (rotation: Double, pitch: Double, planeX: Double, planeY: Doub
     var planeY = GaussianVertex(planeY, measurementError)
     var planeZ = GaussianVertex(planeZ, measurementError)
 
-    var planeNormal = Vector3D(this.planeX, this.planeY, this.planeZ)
+    var planeNormal = ProbabilisticVector3D(this.planeX, this.planeY, this.planeZ)
     var controlSetting = Pair(this.rotation, this.pitch)
 
 }
