@@ -1,8 +1,17 @@
 import io.improbable.keanu.vertices.dbl.DoubleVertex
+import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: DoubleVertex) {
+
+    constructor(): this(GaussianVertex(0.0, 100.0),
+                        GaussianVertex(0.0, 100.0),
+                        GaussianVertex(0.0, 100.0))
+
+    constructor(deterministicLocation: Vector3D): this(ConstantDoubleVertex(deterministicLocation.x),
+                                                       ConstantDoubleVertex(deterministicLocation.y),
+                                                       ConstantDoubleVertex(deterministicLocation.z))
 
     operator fun plus(other: ProbabilisticVector3D): ProbabilisticVector3D {
         return ProbabilisticVector3D(x + other.x, y + other.y, z + other.z)

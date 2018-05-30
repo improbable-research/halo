@@ -11,11 +11,7 @@ import java.io.FileReader
 class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     class DataPoint(val ABC : Vector3D, val control: ServoSetting) {}
 
-    val helioStat = HelioStat(ProbabilisticVector3D(
-            GaussianVertex(0.0, 100.0),
-            GaussianVertex(0.0, 100.0),
-            GaussianVertex(0.0, 100.0)
-    ))
+    val helioStat = HelioStat(ProbabilisticHelioStatParameters())
 
     constructor(array : List<DataPoint>) : super(array) {}
     constructor() : super() {}
@@ -50,13 +46,14 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
             )
             plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
         }
-        return BayesNet(helioStat.cPitch.connectedGraph)
+        return BayesNet(helioStat.params.cPitch.connectedGraph)
     }
 
     fun inferMaxAPosteriori() {
         val model = createBayesNet()
         val optimiser = GradientOptimizer(model)
         optimiser.maxAPosteriori(10000)
+//        val result = HelioStatParameters()
     }
 
     fun calculateResiduals() {
