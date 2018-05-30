@@ -9,6 +9,7 @@ class HelioStat (var expectedLocation: Vector3D,
 
     var heliostatOffsetFromPivot = GaussianVertex(100.0, 10.0)
 
+    // TODO
     var pivotPoint = findPivotPoint()
 
     // Assume linear map from servoInput, x,  to corresponding heliostat rotation, y: y = mx + c
@@ -16,26 +17,6 @@ class HelioStat (var expectedLocation: Vector3D,
     var cPitch = GaussianVertex(1.0, 1.0)
     var mRotation = GaussianVertex(1.0, 1.0)
     var cRotation = GaussianVertex(1.0, 1.0)
-
-
-    fun findPivotPoint(): Vector3D {
-        return Vector3D()
-    }
-//
-//        var m = GaussianVertex(1.0, 1.0)
-//        var n = GaussianVertex(1.0, 1.0)
-//        var o = GaussianVertex(1.0, 1.0)
-//
-//        var plates = PlateBuilder<Observation>()
-//                .fromIterator(calibrationObservations.iterator())
-//                .withFactory( {plate, data ->
-//
-//                    // Placeholder function for trial
-//                    var one = m * data.planeX + n * data.planeY + o * data.planeZ
-//                    one.observe(1.0)
-//                } )
-//
-//    }
 
     fun computeHeliostatNormal (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): Vector3D {
         var heliostatPitch = mPitch * servoPitchSignal + cPitch
@@ -57,15 +38,13 @@ class HelioStat (var expectedLocation: Vector3D,
         return heliostatNormal * heliostatCentreLocation.dot(heliostatNormal)
     }
 
-    fun computeDesiredHeliostatPlane (incomingSunDirection: Vector3D, targetPoint: Vector3D): Vector3D {
-        var pivotToTargetDirection = (targetPoint - pivotPoint).unit()
-        return ((incomingSunDirection + pivotToTargetDirection) / 2.0).cross(incomingSunDirection.cross(pivotToTargetDirection))
+    fun computeTargetPoint (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex,
+                            incomingSunDirection: Vector3D, distance: DoubleVertex): Vector3D {
+        var heliostatCentreLocation = computeHeliostatCentrePoint(servoPitchSignal, servoRotationSignal)
+        var heliostatPlane = computeHeliostatPlane(servoPitchSignal, servoRotationSignal)
+        var unitNormal = heliostatPlane.unit()
+        var reflectedDirection = incomingSunDirection - unitNormal * incomingSunDirection.dot(unitNormal) * 2.0
+        return heliostatCentreLocation + reflectedDirection * distance
     }
-
-    fun computeDesiredControlParameters (incomingSunDirection: Vector3D, targetPoint: Vector3D) {
-        var desiredHeliostatPlane = computeDesiredHeliostatPlane(incomingSunDirection, targetPoint)
-
-    }
-
 
 }
