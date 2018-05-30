@@ -1,13 +1,13 @@
 import io.improbable.keanu.algorithms.variational.GradientOptimizer
 import io.improbable.keanu.network.BayesNet
-import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.UniformVertex
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class HelioStatNavigator(var params: ProbabilisticHelioStatParameters) {
 
 
     fun computeServoSetting(incomingSunDirection: ProbabilisticVector3D,
-                            targetPoint: ProbabilisticVector3D): ServoSetting {
+                            targetPoint: Vector3D): ServoSetting {
 
         var model = HelioStat(params)
 
@@ -17,9 +17,7 @@ class HelioStatNavigator(var params: ProbabilisticHelioStatParameters) {
 
         var target = model.computeTargetPoint(servoPitchRange, servoRotationRange, incomingSunDirection, targetDistance)
 
-        var targetObservationNoise = ProbabilisticVector3D(GaussianVertex(1.0, 0.0),
-                                                           GaussianVertex(1.0, 0.0),
-                                                           GaussianVertex(1.0, 0.0))
+        var targetObservationNoise = Vector3D(1.0, 1.0, 1.0)
         target.noisyObserve(targetPoint, targetObservationNoise)
 
         var net = BayesNet(target.x.connectedGraph)
@@ -27,7 +25,6 @@ class HelioStatNavigator(var params: ProbabilisticHelioStatParameters) {
         var gradOpt = GradientOptimizer(net)
         gradOpt.maxAPosteriori(1000)
 
-
-
+        return ServoSetting(servoRotationRange.value.toInt(), servoPitchRange.value.toInt())
     }
 }
