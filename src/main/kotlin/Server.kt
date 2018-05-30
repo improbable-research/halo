@@ -1,6 +1,7 @@
 import io.javalin.ApiBuilder.get
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class Server {
     val app = Javalin.create().apply {
@@ -26,7 +27,7 @@ class Server {
             }
 
             get("/test") { ctx ->
-                ctx.json(HelioStatCalibration(listOf(HelioStatCalibration.DataPoint(listOf(0.1,0.2,0.3), listOf(1,2)))))
+                ctx.json(HelioStatCalibration(listOf(HelioStatCalibration.DataPoint(Vector3D(0.1,0.2,0.3), ServoSetting(1,2)))))
             }
 
 

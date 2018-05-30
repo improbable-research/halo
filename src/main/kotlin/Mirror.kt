@@ -23,7 +23,6 @@ class Mirror (var expectedLocation: Vector3D,
                     var one = m * data.planeX + n * data.planeY + o * data.planeZ
                     one.observe(1.0)
                 } )
-
     }
 
 
