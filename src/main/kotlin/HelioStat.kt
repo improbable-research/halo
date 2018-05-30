@@ -1,18 +1,18 @@
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 
-class HelioStat (var pivotPoint: ProbabilisticVector3D, // expected location of pivot point
-                 var calibrationObservations: List<Observation>) {
+class HelioStat (var pivotPoint: ProbabilisticVector3D // prior location of pivot point
+) {
 
     // Facing installation, Z runs towards one, X runs rightwards, Y runs upwards
 
-    var heliostatOffsetFromPivot = GaussianVertex(100.0, 10.0)
+    var heliostatOffsetFromPivot = GaussianVertex(0.1, 10.0)
 
     // Assume linear map from servoInput, x,  to corresponding heliostat rotation, y: y = mx + c
-    var mPitch = GaussianVertex(1.0, 1.0)
-    var cPitch = GaussianVertex(1.0, 1.0)
-    var mRotation = GaussianVertex(1.0, 1.0)
-    var cRotation = GaussianVertex(1.0, 1.0)
+    var mPitch = GaussianVertex(0.0, 100.0)
+    var cPitch = GaussianVertex(0.0, 100.0)
+    var mRotation = GaussianVertex(0.0, 100.0)
+    var cRotation = GaussianVertex(0.0, 100.0)
 
     fun computeHeliostatNormal (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
         var heliostatPitch = mPitch * servoPitchSignal + cPitch

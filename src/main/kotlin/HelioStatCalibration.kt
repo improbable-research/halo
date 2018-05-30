@@ -1,4 +1,6 @@
 import com.google.gson.Gson
+import io.improbable.keanu.network.BayesNet
+import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import java.io.BufferedReader
 import java.io.FileNotFoundException
@@ -12,7 +14,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
 
     fun readFromFile(filename: String) {
         val gson = Gson()
-        var buff = BufferedReader(FileReader("calibrationData.json"))
+        var buff = BufferedReader(FileReader(filename))
 
         val data = gson.fromJson(buff, CalibrationRawData::class.java)
 
@@ -30,6 +32,18 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
             )
         }
 
+    }
+
+    fun createBayesNet() : BayesNet {
+        val helioStat = HelioStat(ProbabilisticVector3D(
+                GaussianVertex(0.0, 100.0),
+                GaussianVertex(0.0, 100.0),
+                GaussianVertex(0.0, 100.0)
+        ))
+        for(dataPoint in this) {
+
+        }
+        return BayesNet(helioStat.cPitch.connectedGraph)
     }
 
 }
