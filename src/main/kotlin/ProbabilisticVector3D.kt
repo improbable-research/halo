@@ -58,4 +58,10 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
     fun unit(): ProbabilisticVector3D {
         return this / length()
     }
+
+    fun noisyObserve(observation : Vector3D, uncertainty : Vector3D) {
+        GaussianVertex(x, uncertainty.x).observe(observation.x)
+        GaussianVertex(y, uncertainty.y).observe(observation.y)
+        GaussianVertex(z, uncertainty.z).observe(observation.z)
+    }
 }

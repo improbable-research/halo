@@ -1,5 +1,7 @@
 import com.google.gson.Gson
+import io.improbable.keanu.algorithms.variational.GradientOptimizer
 import io.improbable.keanu.network.BayesNet
+import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import java.io.BufferedReader
@@ -8,6 +10,8 @@ import java.io.FileReader
 
 class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     class DataPoint(val ABC : Vector3D, val control: ServoSetting) {}
+
+    val helioStat = HelioStat(ProbabilisticHelioStatParameters())
 
     constructor(array : List<DataPoint>) : super(array) {}
     constructor() : super() {}
@@ -35,15 +39,32 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     }
 
     fun createBayesNet() : BayesNet {
-        val helioStat = HelioStat(ProbabilisticVector3D(
-                GaussianVertex(0.0, 100.0),
-                GaussianVertex(0.0, 100.0),
-                GaussianVertex(0.0, 100.0)
-        ))
         for(dataPoint in this) {
-
+            val plane = helioStat.computeHeliostatPlane(
+                    ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
+                    ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
+            )
+            plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
         }
-        return BayesNet(helioStat.cPitch.connectedGraph)
+        return BayesNet(helioStat.params.cPitch.connectedGraph)
+    }
+
+    fun inferMaxAPosteriori() {
+        val model = createBayesNet()
+        val optimiser = GradientOptimizer(model)
+        optimiser.maxAPosteriori(10000)
+//        val result = HelioStatParameters()
+    }
+
+    fun calculateResiduals() {
+        for(dataPoint in this) {
+            val plane = helioStat.computeHeliostatPlane(
+                    ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
+                    ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
+            )
+            val modelledPlane = Vector3D(plane.x.value, plane.y.value, plane.z.value)
+            modelledPlane.subtract(dataPoint.ABC)
+        }
     }
 
 }
