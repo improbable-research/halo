@@ -3,13 +3,18 @@ import io.improbable.keanu.algorithms.variational.GradientOptimizer
 import io.improbable.keanu.network.BayesNet
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+import org.apache.commons.math3.optim.SimpleValueChecker
+import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
 import java.io.BufferedReader
 import java.io.FileReader
+import java.util.*
+import kotlin.math.PI
 
 class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     class DataPoint(val ABC : Vector3D, val control: ServoSetting) {}
 
     val probabilisticHelioStat = HelioStat(ProbabilisticHelioStatParameters())
+    val rand = Random()
 
 
     constructor(array : List<DataPoint>) : super(array) {}
@@ -40,16 +45,12 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     }
 
     fun createBayesNet() : BayesNet {
-        var i = 0
         for(dataPoint in this) {
-            i += 1
-            if(i%100 == 0) {
-                val plane = probabilisticHelioStat.computeHeliostatPlane(
-                        ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
-                        ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
-                )
-                plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
-            }
+            val plane = probabilisticHelioStat.computeHeliostatPlane(
+                    ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
+                    ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
+            )
+            plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
         }
         return BayesNet(probabilisticHelioStat.params.cPitch.connectedGraph)
     }
@@ -57,7 +58,12 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     fun inferMaxAPosteriori() : HelioStatParameters {
         val model = createBayesNet()
         val optimiser = GradientOptimizer(model)
-       optimiser.maxAPosteriori(10000)
+        optimiser.maxAPosteriori(10000,
+                NonLinearConjugateGradientOptimizer(
+                        NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
+                        SimpleValueChecker(1e-16, 1e-16)
+                )
+        )
         return probabilisticHelioStat.params.getValue()
     }
 
@@ -78,4 +84,41 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         }
         return residual/n
     }
+
+    fun randomSubSample(nSamples : Int) {
+        var n = nSamples
+        var i = 0;
+        val subset = ArrayList<DataPoint>()
+        while(n-- > 0 && size > 0) {
+            i = rand.nextInt(this.size)
+            subset.add(this.removeAt(i))
+        }
+        this.clear()
+        this.addAll(subset)
+    }
+
+    fun createSyntheticTrainingSet(nSamples : Int, params : HelioStatParameters) {
+        val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
+        this.clear()
+        for(i in 1..nSamples) {
+            val control = ServoSetting(
+                    ((rand.nextDouble()*2.0*PI - params.rotationParameters.c)/params.rotationParameters.m).toInt(),
+                    ((rand.nextDouble()*2.0*PI - params.pitchParameters.c)/params.pitchParameters.m).toInt()
+            )
+
+            val plane = forwardModel.computeHeliostatPlane(
+                    ConstantDoubleVertex(control.pitch.toDouble()),
+                    ConstantDoubleVertex(control.rotation.toDouble())
+            )
+            plane.x.lazyEval()
+            plane.y.lazyEval()
+            plane.z.lazyEval()
+
+            val modelledPlane = plane.getValue()
+            println("modelled plane: $modelledPlane")
+            this.add(DataPoint(plane.getValue(), control))
+        }
+
+    }
+
 }

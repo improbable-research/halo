@@ -11,9 +11,11 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
     fun computeHeliostatNormal (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
         var heliostatPitch = params.mPitch * servoPitchSignal + params.cPitch
         var heliostatRotation = params.mRotation * servoRotationSignal + params.cRotation
-        return ProbabilisticVector3D(heliostatPitch.cos() * heliostatRotation.cos(),
-                        heliostatPitch.sin() * heliostatRotation.cos(),
-                           heliostatRotation.sin())
+        return ProbabilisticVector3D(
+                heliostatPitch.cos() * heliostatRotation.cos(),
+                heliostatPitch.sin(),
+                heliostatPitch.cos() * heliostatRotation.sin()
+        )
     }
 
     fun computeHeliostatCentrePoint (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
@@ -28,6 +30,11 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
         return heliostatNormal * heliostatCentreLocation.dot(heliostatNormal)
     }
 
+    fun computeHeliostatPlane (normal: ProbabilisticVector3D, pivotPoint: ProbabilisticVector3D): ProbabilisticVector3D {
+        return normal * (pivotPoint.dot(normal) + heliostatOffsetFromPivot) // finding pivot point reduces to linear regression!!!
+    }
+
+
     fun computeTargetPoint (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex,
                             incomingSunDirection: ProbabilisticVector3D, distance: DoubleVertex): ProbabilisticVector3D {
         var heliostatCentreLocation = computeHeliostatCentrePoint(servoPitchSignal, servoRotationSignal)
@@ -36,5 +43,6 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
         var reflectedDirection = incomingSunDirection - unitNormal * incomingSunDirection.dot(unitNormal) * 2.0
         return heliostatCentreLocation + reflectedDirection * distance
     }
+
 
 }

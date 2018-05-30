@@ -8,8 +8,8 @@ class ProbabilisticHelioStatParameters(var pivotPoint: ProbabilisticVector3D,
                                        var mRotation: DoubleVertex, var cRotation: DoubleVertex) {
 
     constructor(): this(ProbabilisticVector3D(),
-                        GaussianVertex(0.0, 0.01), GaussianVertex(0.0, 3.0),
-                        GaussianVertex(0.0, 0.01), GaussianVertex(0.0, 3.0))
+                        GaussianVertex(0.0, 1.0), GaussianVertex(0.0, 3.0),
+                        GaussianVertex(0.0, 1.0), GaussianVertex(0.0, 3.0))
 
     constructor(pivotPoint: Vector3D, mPitch: Double, cPitch: Double, mRotation: Double, cRotation: Double):
             this(ProbabilisticVector3D(pivotPoint),
