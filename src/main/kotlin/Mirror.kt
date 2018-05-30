@@ -2,8 +2,7 @@ import io.improbable.keanu.plating.PlateBuilder
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 
-class Mirror (var servoPitchMin, var servoPitchMax, var servoRotationMin, var servoRotationMax,
-              var expectedLocation: Vector3D,
+class Mirror (var expectedLocation: Vector3D,
               var calibrationObservations: List<Observation>) {
 
     // Facing installation, Z runs towards one, X runs rightwards, Y runs upwards
@@ -20,21 +19,23 @@ class Mirror (var servoPitchMin, var servoPitchMax, var servoRotationMin, var se
 
 
     fun findPivotPoint(): Vector3D {
-
-        var m = GaussianVertex(1.0, 1.0)
-        var n = GaussianVertex(1.0, 1.0)
-        var o = GaussianVertex(1.0, 1.0)
-
-        var plates = PlateBuilder<Observation>()
-                .fromIterator(calibrationObservations.iterator())
-                .withFactory( {plate, data ->
-
-                    // Placeholder function for trial
-                    var one = m * data.planeX + n * data.planeY + o * data.planeZ
-                    one.observe(1.0)
-                } )
-
+        return Vector3D()
     }
+//
+//        var m = GaussianVertex(1.0, 1.0)
+//        var n = GaussianVertex(1.0, 1.0)
+//        var o = GaussianVertex(1.0, 1.0)
+//
+//        var plates = PlateBuilder<Observation>()
+//                .fromIterator(calibrationObservations.iterator())
+//                .withFactory( {plate, data ->
+//
+//                    // Placeholder function for trial
+//                    var one = m * data.planeX + n * data.planeY + o * data.planeZ
+//                    one.observe(1.0)
+//                } )
+//
+//    }
 
     fun computeMirrorNormal (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): Vector3D {
         var mirrorPitch = mPitch * servoPitchSignal + cPitch
@@ -56,13 +57,15 @@ class Mirror (var servoPitchMin, var servoPitchMax, var servoRotationMin, var se
         return mirrorNormal * mirrorCentreLocation.dot(mirrorNormal)
     }
 
-
-    fun getMirrorNormal (incomingSunDirection: Vector3D, targetPoint: Vector3D) {
-
+    fun computeDesiredMirrorPlane (incomingSunDirection: Vector3D, targetPoint: Vector3D): Vector3D {
         var pivotToTargetDirection = (targetPoint - pivotPoint).unit()
+        return ((incomingSunDirection + pivotToTargetDirection) / 2.0).cross(incomingSunDirection.cross(pivotToTargetDirection))
+    }
 
-        var mirrorNormal = ((incomingSunDirection + pivotToTargetDirection) / 2.0).cross(incomingSunDirection.cross(pivotToTargetDirection))
+    fun computeDesiredControlParameters (incomingSunDirection: Vector3D, targetPoint: Vector3D) {
+        var desiredMirrorPlane = computeDesiredMirrorPlane(incomingSunDirection, targetPoint)
 
     }
+
 
 }
