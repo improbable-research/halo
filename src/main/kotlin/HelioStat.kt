@@ -6,7 +6,7 @@ import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 
 class HelioStat (var params: ProbabilisticHelioStatParameters) {
 
-    var heliostatOffsetFromPivot = GaussianVertex(0.1, 10.0)
+    var heliostatOffsetFromPivot = 0.144 // measured with caliper, variance sub-millimetre
 
     fun computeHeliostatNormal (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
         var heliostatPitch = params.mPitch * servoPitchSignal + params.cPitch

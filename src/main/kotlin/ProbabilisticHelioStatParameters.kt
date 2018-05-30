@@ -8,8 +8,8 @@ class ProbabilisticHelioStatParameters(var pivotPoint: ProbabilisticVector3D,
                                        var mRotation: DoubleVertex, var cRotation: DoubleVertex) {
 
     constructor(): this(ProbabilisticVector3D(),
-                        GaussianVertex(0.0, 100.0), GaussianVertex(0.0, 100.0),
-                        GaussianVertex(0.0, 100.0), GaussianVertex(0.0, 100.0))
+                        GaussianVertex(0.0, 0.01), GaussianVertex(0.0, 3.0),
+                        GaussianVertex(0.0, 0.01), GaussianVertex(0.0, 3.0))
 
     constructor(pivotPoint: Vector3D, mPitch: Double, cPitch: Double, mRotation: Double, cRotation: Double):
             this(ProbabilisticVector3D(pivotPoint),
@@ -20,4 +20,11 @@ class ProbabilisticHelioStatParameters(var pivotPoint: ProbabilisticVector3D,
             this(params.pivotPoint, params.pitchParameters.m, params.pitchParameters.c,
                  params.rotationParameters.m, params.rotationParameters.c)
 
+    fun getValue() : HelioStatParameters {
+        return HelioStatParameters(
+              pivotPoint.getValue(),
+                HelioStatParameters.ServoParameters(mPitch.value, cPitch.value),
+                HelioStatParameters.ServoParameters(mRotation.value, cRotation.value)
+        )
+    }
 }

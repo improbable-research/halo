@@ -5,9 +5,9 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: DoubleVertex) {
 
-    constructor(): this(GaussianVertex(0.0, 100.0),
-                        GaussianVertex(0.0, 100.0),
-                        GaussianVertex(0.0, 100.0))
+    constructor(): this(GaussianVertex(0.0, 10.0),
+                        GaussianVertex(0.0, 10.0),
+                        GaussianVertex(0.0, 10.0))
 
     constructor(deterministicLocation: Vector3D): this(ConstantDoubleVertex(deterministicLocation.x),
                                                        ConstantDoubleVertex(deterministicLocation.y),
@@ -63,5 +63,9 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
         GaussianVertex(x, uncertainty.x).observe(observation.x)
         GaussianVertex(y, uncertainty.y).observe(observation.y)
         GaussianVertex(z, uncertainty.z).observe(observation.z)
+    }
+
+    fun getValue() : Vector3D {
+        return(Vector3D(x.value, y.value, z.value))
     }
 }
