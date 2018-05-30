@@ -36,6 +36,14 @@ class Vector3D (var x: DoubleVertex, var y: DoubleVertex, var z: DoubleVertex) {
         return Vector3D(x / denominator, y / denominator, z / denominator)
     }
 
+    operator fun times(scalar: DoubleVertex): Vector3D {
+        return Vector3D(x * scalar, y * scalar, z * scalar)
+    }
+
+    operator fun times(scalar: Double): Vector3D {
+        return Vector3D(x * scalar, y * scalar, z * scalar)
+    }
+
     fun unit(): Vector3D {
         return this / length()
     }
