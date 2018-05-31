@@ -12,8 +12,8 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
     fun servoSignalToUnitSpherical(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex) : ProbabilisticVector3D {
         return ProbabilisticVector3D(
                 ConstantDoubleVertex(1.0),
-                params.mPitch * servoPitchSignal + params.cPitch,
-                params.mRotation * servoRotationSignal + params.cRotation
+                params.pitchParameters.m * servoPitchSignal + params.pitchParameters.c,
+                params.rotationParameters.m * servoRotationSignal + params.rotationParameters.c
         )
     }
 

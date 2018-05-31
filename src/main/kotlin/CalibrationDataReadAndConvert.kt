@@ -2,6 +2,7 @@ import com.google.gson.Gson
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import java.io.BufferedReader
 import java.io.FileReader
+import java.lang.Math.abs
 import java.util.*
 
 class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> () {
@@ -50,5 +51,7 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
 fun main(args : Array<String>) {
     var c = CalibrationDataReadAndConvert()
     c.readFromFile("calibrationData.json")
-    println("" + c[2].length + " " + c[2].pitch + " " + c[2].rotation + " " + c[2].control.pitch + " " + c[2].control.rotation)
+    for(entry in c) {
+        if(abs(entry.length) < 1.0) println("" + entry.control.pitch + " " + entry.control.rotation + " " + entry.length + " " + entry.pitch + " " + entry.rotation)
+    }
 }

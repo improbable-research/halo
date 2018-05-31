@@ -15,6 +15,10 @@ import kotlin.math.PI
 class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     class DataPoint( val length : Double, val pitch : Double, val rotation : Double, val control: ServoSetting) {}
 
+    constructor(data : Array<DataPoint>) {
+        this.addAll(data)
+    }
+
     val probabilisticHelioStat = HelioStat(ProbabilisticHelioStatParameters())
     val rand = Random()
 
@@ -47,16 +51,10 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
 
     }
 
-    fun createBayesNet() : BayesNet {
-        for(dataPoint in this) {
-            val plane = probabilisticHelioStat.computeHeliostatPlane(
-                    ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
-                    ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
-            )
-            // TODO fix this for spherical
-//            plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
-        }
-        return BayesNet(probabilisticHelioStat.params.cPitch.connectedGraph)
+    fun inferAllParams() : HelioStatParameters {
+        val params = inferServoParams()
+        params.pivotPoint = inferPivotPoint()
+        return params
     }
 
     fun inferPivotPoint() : Vector3D {
@@ -78,6 +76,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         return(helioStat.params.pivotPoint.getValue())
     }
 
+
     fun inferServoParams() : HelioStatParameters {
         val helioStat = HelioStat(ProbabilisticHelioStatParameters())
         for (dataPoint in this) {
@@ -85,7 +84,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
             GaussianVertex(sphericalNorm.y, 0.001).observe(dataPoint.pitch)
             GaussianVertex(sphericalNorm.z, 0.001).observe(dataPoint.rotation)
         }
-        val pmodel = BayesNet(helioStat.params.mPitch.connectedGraph)
+        val pmodel = BayesNet(helioStat.params.pitchParameters.m.connectedGraph)
         val poptimiser = GradientOptimizer(pmodel)
         poptimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(
@@ -94,7 +93,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
                 )
         )
 
-        val rmodel = BayesNet(helioStat.params.mRotation.connectedGraph)
+        val rmodel = BayesNet(helioStat.params.rotationParameters.m.connectedGraph)
         val roptimiser = GradientOptimizer(rmodel)
         roptimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(
@@ -107,36 +106,23 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         return helioStat.params.getValue()
     }
 
-    fun inferMaxAPosteriori() : HelioStatParameters {
-        val model = createBayesNet()
-        val optimiser = GradientOptimizer(model)
-        optimiser.maxAPosteriori(10000,
-                NonLinearConjugateGradientOptimizer(
-                        NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-16, 1e-16)
-                )
-        )
-        return probabilisticHelioStat.params.getValue()
-    }
 
+    fun calculateResiduals(params : HelioStatParameters) : ArrayList<Vector3D> {
 
-    fun calculateResiduals(params : HelioStatParameters) : Double {
         val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
-        var residual = 0.0
-        var n = 0
+        var residual = ArrayList<Vector3D>(this.size)
         for(dataPoint in this) {
-            val plane = forwardModel.computeHeliostatPlane(
+            val plane = forwardModel.computeHeliostatPlaneSpherical(
                     ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
                     ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
             )
             val modelledPlane = plane.getValue()
-            // TODO Fix this for spherical coords
-//            println("modelled plane: $modelledPlane dataPoint: ${dataPoint.ABC}")
-//            residual += modelledPlane.subtract(dataPoint.ABC).norm
-            n += 1
+//            println("modelled plane: $modelledPlane dataPoint: ${dataPoint.length}, ${dataPoint.pitch}, ${dataPoint.rotation} ")
+            residual.add(modelledPlane.subtract(Vector3D(dataPoint.length, dataPoint.pitch, dataPoint.rotation)))
         }
-        return residual/n
+        return residual
     }
+
 
     fun randomSubSample(nSamples : Int) {
         var n = nSamples
@@ -176,29 +162,4 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         }
 
     }
-
-//    fun cartesianToSpherical(xyz : Vector3D) : Vector3D {
-//        val unitNorm = xyz.normalize()
-//        return Vector3D(
-//                xyz.norm,
-//                acos(1.0-xyz.y),
-//                atan(xyz.z/xyz.x)
-//        )
-//    }
-//
-//    fun erectToFlacid(spherical : Vector3D) : Vector3D {
-//        return Vector3D(
-//                spherical.x,
-//                -spherical.y,
-//                spherical.z
-//        )
-//    }
-//
-//    fun sphericalToCartesian(spherical : Vector3D) : Vector3D {
-//        return Vector3D(
-//                sin(spherical.y)*cos(spherical.z),
-//                cos(spherical.y),
-//                sin(spherical.y)*sin(spherical.z)
-//        )
-//    }
 }
