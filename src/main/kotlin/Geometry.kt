@@ -2,11 +2,13 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 object Geometry {
     fun cartesianToSpherical(xyz : Vector3D) : Vector3D {
+        println("xyz.norm is ${xyz.norm}")
         val unitNorm = xyz.normalize()
+        println("acos is ${Math.acos(unitNorm.y)}")
         return Vector3D(
                 xyz.norm,
-                Math.acos(1.0-xyz.y),
-                Math.atan(xyz.z/xyz.x)
+                Math.acos(unitNorm.y),
+                Math.atan(unitNorm.z/unitNorm.x)
         )
     }
 
