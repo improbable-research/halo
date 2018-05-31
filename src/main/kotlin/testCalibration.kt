@@ -13,20 +13,23 @@ fun main(args : Array<String>) {
 //    calibrator.randomSubSample(10)
     calibrator.createSyntheticTrainingSet(30, testParams)
 
-    calibrator.probabilisticHelioStat.params.pivotPoint.x.value = 100.1
-    calibrator.probabilisticHelioStat.params.pivotPoint.y.value = 100.2
-    calibrator.probabilisticHelioStat.params.pivotPoint.z.value = 200.3
-    calibrator.probabilisticHelioStat.params.cPitch.value = 0.11
-    calibrator.probabilisticHelioStat.params.mPitch.value = 0.0011
-    calibrator.probabilisticHelioStat.params.cRotation.value = 0.21
-    calibrator.probabilisticHelioStat.params.mRotation.value = 0.0021
+//    calibrator.probabilisticHelioStat.params.pivotPoint.x.value = 100.1
+//    calibrator.probabilisticHelioStat.params.pivotPoint.y.value = 100.2
+//    calibrator.probabilisticHelioStat.params.pivotPoint.z.value = 200.3
+//    calibrator.probabilisticHelioStat.params.cPitch.value = 0.11
+//    calibrator.probabilisticHelioStat.params.mPitch.value = 0.0011
+//    calibrator.probabilisticHelioStat.params.cRotation.value = 0.21
+//    calibrator.probabilisticHelioStat.params.mRotation.value = 0.0021
 
     val pivot = calibrator.inferPivotPoint()
     println("Pivot is: $pivot")
 
-    val bestParams = calibrator.inferMaxAPosteriori()
-    println("Best params are ${bestParams}")
+    val servoParams = calibrator.inferServoParams()
+    println("Servo Params are: $servoParams")
+
+//    val bestParams = calibrator.inferMaxAPosteriori()
+//    println("Best params are ${bestParams}")
     println("Correct params are: $testParams")
-    val r = calibrator.calculateResiduals(bestParams)
-    println("average residual is ${r}")
+//    val r = calibrator.calculateResiduals(bestParams)
+//    println("average residual is ${r}")
 }

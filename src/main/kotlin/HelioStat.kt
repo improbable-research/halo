@@ -1,6 +1,5 @@
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
-import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 // Note: Sign convention:
@@ -10,11 +9,18 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
 
     var heliostatOffsetFromPivot = 0.144 // measured with caliper, variance sub-millimetre
 
-    fun servoModel(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex) : ProbabilisticVector3D {
+    fun servoSignalToUnitSpherical(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex) : ProbabilisticVector3D {
         return ProbabilisticVector3D(
                 ConstantDoubleVertex(1.0),
                 params.mPitch * servoPitchSignal + params.cPitch,
                 params.mRotation * servoRotationSignal + params.cRotation
+        )
+    }
+
+    fun servoSignalToUnitSpherical(control : ServoSetting) : ProbabilisticVector3D {
+        return servoSignalToUnitSpherical(
+                ConstantDoubleVertex(control.pitch.toDouble()),
+                ConstantDoubleVertex(control.rotation.toDouble())
         )
     }
 
@@ -27,7 +33,7 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
     }
 
     fun computeHeliostatNormal (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
-        val mirrorAngle = servoModel(servoPitchSignal, servoRotationSignal)
+        val mirrorAngle = servoSignalToUnitSpherical(servoPitchSignal, servoRotationSignal)
         return sphericalToCartesian(mirrorAngle.y, mirrorAngle.z)
     }
 
@@ -44,7 +50,7 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
     }
 
     fun computeHeliostatPlaneSpherical (servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
-        val sphericalNorm = servoModel(servoPitchSignal, servoRotationSignal)
+        val sphericalNorm = servoSignalToUnitSpherical(servoPitchSignal, servoRotationSignal)
         val cartesianNorm = sphericalToCartesian(sphericalNorm.y, sphericalNorm.z)
         return ProbabilisticVector3D(
                 params.pivotPoint.dot(cartesianNorm) + heliostatOffsetFromPivot,
