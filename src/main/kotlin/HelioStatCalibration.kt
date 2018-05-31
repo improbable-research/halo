@@ -2,6 +2,7 @@ import com.google.gson.Gson
 import io.improbable.keanu.algorithms.variational.GradientOptimizer
 import io.improbable.keanu.network.BayesNet
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
+import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
@@ -53,6 +54,28 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
             plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
         }
         return BayesNet(probabilisticHelioStat.params.cPitch.connectedGraph)
+    }
+
+    fun inferPivotPoint() : Vector3D {
+        val helioStat = HelioStat(ProbabilisticHelioStatParameters())
+        helioStat.params.pivotPoint.x.value = 1.0
+        helioStat.params.pivotPoint.y.value = 1.0
+        helioStat.params.pivotPoint.z.value = 1.0
+
+        for(dataPoint in this) {
+            val norm = helioStat.computePlaneNorm(ProbabilisticVector3D(dataPoint.ABC.scalarMultiply(1.0/dataPoint.ABC.norm)))
+            println("norm: ${norm.value} ${dataPoint.ABC.norm} ${norm.value - dataPoint.ABC.norm}")
+            GaussianVertex(norm, 0.001).observe(dataPoint.ABC.norm)
+        }
+        val model = BayesNet(helioStat.params.pivotPoint.x.connectedGraph)
+        val optimiser = GradientOptimizer(model)
+        optimiser.maxAPosteriori(10000,
+                NonLinearConjugateGradientOptimizer(
+                        NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
+                        SimpleValueChecker(1e-16, 1e-16)
+                )
+        )
+        return(helioStat.params.pivotPoint.getValue())
     }
 
     fun inferMaxAPosteriori() : HelioStatParameters {

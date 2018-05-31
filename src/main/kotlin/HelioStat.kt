@@ -30,8 +30,8 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
         return heliostatNormal * heliostatCentreLocation.dot(heliostatNormal)
     }
 
-    fun computeHeliostatPlane (normal: ProbabilisticVector3D, pivotPoint: ProbabilisticVector3D): ProbabilisticVector3D {
-        return normal * (pivotPoint.dot(normal) + heliostatOffsetFromPivot) // finding pivot point reduces to linear regression!!!
+    fun computePlaneNorm (normal: ProbabilisticVector3D): DoubleVertex {
+        return params.pivotPoint.dot(normal) + heliostatOffsetFromPivot
     }
 
 

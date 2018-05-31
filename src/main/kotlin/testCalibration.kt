@@ -12,13 +12,16 @@ fun main(args : Array<String>) {
 //    calibrator.randomSubSample(10)
     calibrator.createSyntheticTrainingSet(30, testParams)
 
-    calibrator.probabilisticHelioStat.params.pivotPoint.x.value = 1.1
-    calibrator.probabilisticHelioStat.params.pivotPoint.y.value = 1.1
-    calibrator.probabilisticHelioStat.params.pivotPoint.z.value = 1.1
+    calibrator.probabilisticHelioStat.params.pivotPoint.x.value = 1.0
+    calibrator.probabilisticHelioStat.params.pivotPoint.y.value = 1.0
+    calibrator.probabilisticHelioStat.params.pivotPoint.z.value = 1.0
     calibrator.probabilisticHelioStat.params.cPitch.value = 0.11
     calibrator.probabilisticHelioStat.params.mPitch.value = 0.0011
     calibrator.probabilisticHelioStat.params.cRotation.value = 0.21
     calibrator.probabilisticHelioStat.params.mRotation.value = 0.0021
+
+    val pivot = calibrator.inferPivotPoint()
+    println("Pivot is: $pivot")
 
     val bestParams = calibrator.inferMaxAPosteriori()
     println("Best params are ${bestParams}")
