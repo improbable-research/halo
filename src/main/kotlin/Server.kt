@@ -27,7 +27,7 @@ class Server {
             }
 
             get("/test") { ctx ->
-                ctx.json(HelioStatCalibration(listOf(HelioStatCalibration.DataPoint(Vector3D(0.1,0.2,0.3), ServoSetting(1,2)))))
+//                ctx.json(HelioStatCalibration(listOf(HelioStatCalibration.DataPoint(Vector3D(0.1,0.2,0.3), ServoSetting(1,2)))))
             }
 
 

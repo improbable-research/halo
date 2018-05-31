@@ -1,3 +1,4 @@
+import org.apache.commons.math3.geometry.euclidean.threed.SphericalCoordinates
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 fun main(args : Array<String>) {
@@ -12,9 +13,9 @@ fun main(args : Array<String>) {
 //    calibrator.randomSubSample(10)
     calibrator.createSyntheticTrainingSet(30, testParams)
 
-    calibrator.probabilisticHelioStat.params.pivotPoint.x.value = 1.0
-    calibrator.probabilisticHelioStat.params.pivotPoint.y.value = 1.0
-    calibrator.probabilisticHelioStat.params.pivotPoint.z.value = 1.0
+    calibrator.probabilisticHelioStat.params.pivotPoint.x.value = 100.1
+    calibrator.probabilisticHelioStat.params.pivotPoint.y.value = 100.2
+    calibrator.probabilisticHelioStat.params.pivotPoint.z.value = 200.3
     calibrator.probabilisticHelioStat.params.cPitch.value = 0.11
     calibrator.probabilisticHelioStat.params.mPitch.value = 0.0011
     calibrator.probabilisticHelioStat.params.cRotation.value = 0.21

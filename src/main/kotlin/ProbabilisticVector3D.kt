@@ -25,6 +25,10 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
         return x * other.x + y * other.y + z * other.z
     }
 
+    fun dot(other: Vector3D): DoubleVertex {
+        return x * other.x + y * other.y + z * other.z
+    }
+
     fun cross(other: ProbabilisticVector3D): ProbabilisticVector3D {
         return ProbabilisticVector3D(y * other.z - z * other.y,
                         z * other.x - x * other.z,

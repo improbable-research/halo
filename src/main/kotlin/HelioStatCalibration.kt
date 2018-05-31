@@ -8,11 +8,12 @@ import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
 import java.io.BufferedReader
 import java.io.FileReader
+import java.lang.Math.*
 import java.util.*
 import kotlin.math.PI
 
 class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
-    class DataPoint(val ABC : Vector3D, val control: ServoSetting) {}
+    class DataPoint( val length : Double, val pitch : Double, val rotation : Double, val control: ServoSetting) {}
 
     val probabilisticHelioStat = HelioStat(ProbabilisticHelioStatParameters())
     val rand = Random()
@@ -35,12 +36,13 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
             val abcd = entry.value.data.plane.ABCD.split(",").map(String::toDouble)
             val plane = Vector3D(abcd[0], abcd[1], abcd[2]).normalize().scalarMultiply(abcd[3])
             println(plane)
-            add(
-                    DataPoint(
-                            plane,
-                            ServoSetting(entry.value.servoPositions["209"]?:0, entry.value.servoPositions["210"]?:0)
-                    )
-            )
+            // TODO fix this for spherical
+//            add(
+//                    DataPoint(
+//                            plane,
+//                            ServoSetting(entry.value.servoPositions["209"]?:0, entry.value.servoPositions["210"]?:0)
+//                    )
+//            )
         }
 
     }
@@ -51,7 +53,8 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
                     ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
                     ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
             )
-            plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
+            // TODO fix this for spherical
+//            plane.noisyObserve(dataPoint.ABC, Vector3D(0.01, 0.01, 0.01))
         }
         return BayesNet(probabilisticHelioStat.params.cPitch.connectedGraph)
     }
@@ -63,9 +66,9 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         helioStat.params.pivotPoint.z.value = 1.0
 
         for(dataPoint in this) {
-            val norm = helioStat.computePlaneNorm(ProbabilisticVector3D(dataPoint.ABC.scalarMultiply(1.0/dataPoint.ABC.norm)))
-            println("norm: ${norm.value} ${dataPoint.ABC.norm} ${norm.value - dataPoint.ABC.norm}")
-            GaussianVertex(norm, 0.001).observe(dataPoint.ABC.norm)
+            val modelledLength = helioStat.computePlaneDistanceFromOrigin(dataPoint.pitch,dataPoint.rotation)
+            println("len: ${modelledLength.value} ${dataPoint.length} ${modelledLength.value - dataPoint.length}")
+            GaussianVertex(modelledLength, 0.001).observe(dataPoint.length)
         }
         val model = BayesNet(helioStat.params.pivotPoint.x.connectedGraph)
         val optimiser = GradientOptimizer(model)
@@ -101,8 +104,9 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
                     ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
             )
             val modelledPlane = plane.getValue()
-            println("modelled plane: $modelledPlane dataPoint: ${dataPoint.ABC}")
-            residual += modelledPlane.subtract(dataPoint.ABC).norm
+            // TODO Fix this for spherical coords
+//            println("modelled plane: $modelledPlane dataPoint: ${dataPoint.ABC}")
+//            residual += modelledPlane.subtract(dataPoint.ABC).norm
             n += 1
         }
         return residual/n
@@ -129,7 +133,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
                     ((rand.nextDouble()*2.0*PI - params.pitchParameters.c)/params.pitchParameters.m).toInt()
             )
 
-            val plane = forwardModel.computeHeliostatPlane(
+            val plane = forwardModel.computeHeliostatPlaneSpherical(
                     ConstantDoubleVertex(control.pitch.toDouble()),
                     ConstantDoubleVertex(control.rotation.toDouble())
             )
@@ -137,11 +141,38 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
             plane.y.lazyEval()
             plane.z.lazyEval()
 
-            val modelledPlane = plane.getValue()
-            println("modelled plane: $modelledPlane")
-            this.add(DataPoint(plane.getValue(), control))
+            var modelledPlaneSpherical = plane.getValue()
+            if(control.pitch < 0) {
+                modelledPlaneSpherical = Geometry.erectToFlacid(modelledPlaneSpherical)
+            }
+            println("modelled plane: $modelledPlaneSpherical")
+            this.add(DataPoint(modelledPlaneSpherical.x, modelledPlaneSpherical.y, modelledPlaneSpherical.z, control))
         }
 
     }
 
+//    fun cartesianToSpherical(xyz : Vector3D) : Vector3D {
+//        val unitNorm = xyz.normalize()
+//        return Vector3D(
+//                xyz.norm,
+//                acos(1.0-xyz.y),
+//                atan(xyz.z/xyz.x)
+//        )
+//    }
+//
+//    fun erectToFlacid(spherical : Vector3D) : Vector3D {
+//        return Vector3D(
+//                spherical.x,
+//                -spherical.y,
+//                spherical.z
+//        )
+//    }
+//
+//    fun sphericalToCartesian(spherical : Vector3D) : Vector3D {
+//        return Vector3D(
+//                sin(spherical.y)*cos(spherical.z),
+//                cos(spherical.y),
+//                sin(spherical.y)*sin(spherical.z)
+//        )
+//    }
 }
