@@ -2,29 +2,30 @@ import io.improbable.keanu.algorithms.variational.GradientOptimizer
 import io.improbable.keanu.network.BayesNet
 import io.improbable.keanu.vertices.dbl.probabilistic.UniformVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+import kotlin.math.roundToInt
 
 class HelioStatNavigator(var params: ProbabilisticHelioStatParameters) {
-
 
     fun computeServoSetting(incomingSunDirection: ProbabilisticVector3D,
                             targetPoint: Vector3D): ServoSetting {
 
-        var model = HelioStat(params)
+        val model = HelioStat(params)
 
-        var servoPitchRange = UniformVertex(-100.0, 100.0)
-        var servoRotationRange = UniformVertex(-100.0, 100.0)
-        var targetDistance = UniformVertex(1.0, 20.0)
+        // Todo update prior to match actual servo range
+        val servoPitchRange = UniformVertex(-4000.0, 4000.0)
+        val servoRotationRange = UniformVertex(-4000.0, 4000.0)
+        val targetDistance = UniformVertex(1.0, 30.0)
 
-        var target = model.computeTargetPoint(servoPitchRange, servoRotationRange, incomingSunDirection, targetDistance)
+        val target = model.computeTargetPoint(servoPitchRange, servoRotationRange, incomingSunDirection, targetDistance)
 
-        var targetObservationNoise = Vector3D(1.0, 1.0, 1.0)
+        val targetObservationNoise = Vector3D(1.0, 1.0, 1.0)
         target.noisyObserve(targetPoint, targetObservationNoise)
 
-        var net = BayesNet(target.x.connectedGraph)
+        val net = BayesNet(target.x.connectedGraph)
 
-        var gradOpt = GradientOptimizer(net)
+        val gradOpt = GradientOptimizer(net)
         gradOpt.maxAPosteriori(1000)
 
-        return ServoSetting(servoRotationRange.value.toInt(), servoPitchRange.value.toInt())
+        return ServoSetting(servoRotationRange.value.roundToInt(), servoPitchRange.value.roundToInt())
     }
 }

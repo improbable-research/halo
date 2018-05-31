@@ -1,8 +1,3 @@
-import com.google.gson.Gson;
-
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.util.HashMap;
 
 public class CalibrationRawData extends HashMap<String, CalibrationRawData.DataPoint> {

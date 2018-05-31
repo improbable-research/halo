@@ -36,6 +36,7 @@ fun main(args : Array<String>) {
     val residual = r.sumByDouble(Vector3D::getNorm)/r.size
     println("average residual is $residual")
 
+    // TODO should be small and uncorrelated - if there's a shape, then stick it in the model and regress to that.
     for(i in 0 until calibrator.size) {
         println("${calibrator[i].control.pitch} ${calibrator[i].control.rotation} ${r[i].x} ${r[i].y} ${r[i].z}")
     }

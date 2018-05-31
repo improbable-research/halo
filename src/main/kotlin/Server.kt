@@ -1,7 +1,6 @@
 import io.javalin.ApiBuilder.get
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class Server {
     val app = Javalin.create().apply {
@@ -30,7 +29,6 @@ class Server {
 //                ctx.json(HelioStatCalibration(listOf(HelioStatCalibration.DataPoint(Vector3D(0.1,0.2,0.3), ServoSetting(1,2)))))
             }
 
-
             post("/runModel") { ctx ->
 
                 //response in JSON
@@ -54,12 +52,10 @@ class Server {
                 // receive whole caboodle in JSON format
                 // return parameters
             }
-
         }
     }
 
     fun start() : Javalin {
         return app.start()
     }
-
 }

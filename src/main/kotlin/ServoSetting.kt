@@ -1,1 +1,1 @@
-class ServoSetting(val rotation : Int, val pitch : Int) {}
+class ServoSetting(val rotation : Int, val pitch : Int)
