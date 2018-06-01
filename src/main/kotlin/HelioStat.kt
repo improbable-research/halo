@@ -57,19 +57,21 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
     }
 
     fun computeTargetFromSourceDirection(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex,
-                                         incomingSunDirection: ProbabilisticVector3D,
+                                         incomingLightDirection: ProbabilisticVector3D,
                                          distance: DoubleVertex): ProbabilisticVector3D {
         val heliostatCentreLocation = computeHeliostatCentrePoint(servoPitchSignal, servoRotationSignal)
         val heliostatPlane = computeHeliostatPlane(servoPitchSignal, servoRotationSignal)
         val unitNormal = heliostatPlane.unit()
-        val reflectedDirection = incomingSunDirection - unitNormal * incomingSunDirection.dot(unitNormal) * 2.0
+        val reflectedDirection = incomingLightDirection - unitNormal * incomingLightDirection.dot(unitNormal) * 2.0
         return heliostatCentreLocation + reflectedDirection * distance
     }
 
     fun computeTargetFromSourcePoint(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex,
                                      sourcePoint: ProbabilisticVector3D,
                                      distance: DoubleVertex): ProbabilisticVector3D {
-        // TODO
+        val centrePoint = computeHeliostatCentrePoint(servoPitchSignal, servoRotationSignal)
+        val incomingLightDirection = sourcePoint - centrePoint
+        return computeTargetFromSourceDirection(servoPitchSignal, servoRotationSignal, incomingLightDirection, distance)
     }
 
 
