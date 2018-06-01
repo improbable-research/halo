@@ -12,9 +12,9 @@ class HelioStatNavigator(var params: ProbabilisticHelioStatParameters) {
         val model = HelioStat(params)
 
         // Todo update prior to match actual servo range
-        val servoPitchRange = UniformVertex(-4000.0, 4000.0)
-        val servoRotationRange = UniformVertex(-4000.0, 4000.0)
-        val targetDistance = UniformVertex(1.0, 30.0)
+        val servoPitchRange = UniformVertex(0.0, 4096.0)
+        val servoRotationRange = UniformVertex(0.0, 4096.0)
+        val targetDistance = UniformVertex(1.0, 20.0)
 
         val target = model.computeTargetPoint(servoPitchRange, servoRotationRange, incomingSunDirection, targetDistance)
 
