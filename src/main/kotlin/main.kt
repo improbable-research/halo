@@ -26,30 +26,32 @@ fun main(args: Array<String>) {
 
         }
 
-        post("/runModel") { ctx ->
+        post("/setDirection") { ctx ->
             // mx + c
-            val query = ctx.bodyAsClass(HelioStatNavigator.NavigationQuery::class.java)
+            val query = ctx.bodyAsClass(Query.Navigation::class.java)
             ctx.status(201)
+
+            // Maths at:
 
 
             //response in JSON
         }
 
         post("/navigate") { ctx ->
-            val query = ctx.bodyAsClass(HelioStatNavigator.NavigationQuery::class.java)
+            val query = ctx.bodyAsClass(Query.Navigation::class.java)
             ctx.status(201)
 
             val navigator = HelioStatNavigator(query.params)
-            val servoSetting = navigator.computeServoSettingFromDirection(query.source, query.targetPoint)
+            val servoSetting = navigator.computeServoSettingFromDirection(query.source, query.targetPoint, query.currentServoSetting)
             ctx.json(servoSetting)
         }
 
         post("/navigatePointToPoint") { ctx ->
-            val query = ctx.bodyAsClass(HelioStatNavigator.NavigationQuery::class.java)
+            val query = ctx.bodyAsClass(Query.Navigation::class.java)
             ctx.status(201)
 
             val navigator = HelioStatNavigator(query.params)
-            val servoSetting = navigator.computeServoSettingFromPoint(query.source, query.targetPoint)
+            val servoSetting = navigator.computeServoSettingFromPoint(query.source, query.targetPoint, query.currentServoSetting)
             ctx.json(servoSetting)
         }
 
