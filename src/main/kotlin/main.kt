@@ -26,15 +26,13 @@ fun main(args: Array<String>) {
 
         }
 
-        post("/setDirection") { ctx ->
-            // mx + c
-            val query = ctx.bodyAsClass(Query.Navigation::class.java)
+        post("/setMirrorNormal") { ctx ->
+            val query = ctx.bodyAsClass(Query.SetNormal::class.java)
             ctx.status(201)
 
-            // Maths at:
-
-
-            //response in JSON
+            val navigator = HelioStatNavigator(query.params)
+            val servoSetting = navigator.normalToServoSignal(query.mirrorNormal)
+            ctx.json(servoSetting)
         }
 
         post("/navigate") { ctx ->

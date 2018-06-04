@@ -5,6 +5,6 @@ class Query {
     class Navigation(var params: HelioStatParameters, var currentServoSetting: ServoSetting,
                      var targetPoint: Vector3D, var source: Vector3D)
 
-    class SetDirection(var currentServoSetting: ServoSetting, var direction: Vector3D)
+    class SetNormal(var params: HelioStatParameters, var mirrorNormal: Vector3D)
 
 }
