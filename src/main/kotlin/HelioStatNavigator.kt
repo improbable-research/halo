@@ -44,14 +44,16 @@ class HelioStatNavigator {
     }
 
     fun computeServoSettingFromDirection(incomingSunDirection: Vector3D,
-                                         desiredTargetPoint: Vector3D): ServoSetting {
+                                         desiredTargetPoint: Vector3D, currentSetting : ServoSetting): ServoSetting {
         targetDistance.value = 5.0
         val probabilisticTargetPoint = model.computeTargetFromSourceDirection(servoPitchRange, servoRotationRange,
                                                                               ProbabilisticVector3D(incomingSunDirection), targetDistance)
         return computeServoSetting(probabilisticTargetPoint, desiredTargetPoint)
     }
 
-    fun computeServoSettingFromPoint(sourcePoint: Vector3D, desiredTargetPoint: Vector3D): ServoSetting {
+    fun computeServoSettingFromPoint(sourcePoint: Vector3D, desiredTargetPoint: Vector3D, currentSetting : ServoSetting): ServoSetting {
+        servoPitchRange.value = currentSetting.pitch.toDouble()
+        servoRotationRange.value = currentSetting.rotation.toDouble()
 
         val probabilisticTargetPoint = model.computeTargetFromSourcePoint(servoPitchRange, servoRotationRange,
                                                                           sourcePoint, targetDistance)
