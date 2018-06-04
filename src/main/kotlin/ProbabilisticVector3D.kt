@@ -1,3 +1,5 @@
+import io.improbable.keanu.kotlin.cos
+import io.improbable.keanu.kotlin.sin
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
@@ -72,4 +74,11 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
     fun getValue() : Vector3D {
         return(Vector3D(x.value, y.value, z.value))
     }
+
+    fun sphericalToCartesian(spherical : ProbabilisticVector3D) : ProbabilisticVector3D {
+        return ProbabilisticVector3D(sin(spherical.y) * cos(spherical.z),
+                cos(spherical.y),
+                sin(spherical.y) * sin(spherical.z))
+    }
+
 }
