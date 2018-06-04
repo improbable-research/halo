@@ -34,7 +34,7 @@ class HelioStatNavigator {
                 ((sphericalNormal.y - model.params.pitchParameters.c.value)/model.params.pitchParameters.m.value).roundToInt()
         )
     }
-    
+
     private fun computeServoSetting(probabilisticTargetPoint: ProbabilisticVector3D,
                                     desiredTargetPoint: Vector3D): ServoSetting {
 
@@ -54,6 +54,8 @@ class HelioStatNavigator {
     fun computeServoSettingFromDirection(incomingSunDirection: Vector3D,
                                          desiredTargetPoint: Vector3D, currentSetting : ServoSetting): ServoSetting {
         targetDistance.value = 5.0
+        servoPitchRange.value = currentSetting.pitch.toDouble()
+        servoRotationRange.value = currentSetting.rotation.toDouble()
         val probabilisticTargetPoint = model.computeTargetFromSourceDirection(servoPitchRange, servoRotationRange,
                                                                               ProbabilisticVector3D(incomingSunDirection), targetDistance)
         return computeServoSetting(probabilisticTargetPoint, desiredTargetPoint)
