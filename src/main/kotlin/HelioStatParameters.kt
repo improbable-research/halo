@@ -4,9 +4,9 @@ class HelioStatParameters(var pivotPoint: Vector3D,
                           var pitchParameters: HelioStatParameters.ServoParameters,
                           var rotationParameters: HelioStatParameters.ServoParameters) {
 
-    class ServoParameters(var m: Double, var c: Double) {
+    class ServoParameters(var m: Double, var c: Double, var pitch: Double, var rotation: Double) {
         override fun toString() : String {
-            return "{m: $m, c:$c}"
+            return "{m: $m, c: $c, pitch: $pitch, rotation: $rotation}"
         }
     }
 

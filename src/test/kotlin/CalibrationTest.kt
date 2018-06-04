@@ -29,8 +29,8 @@ public class CalibrationTest {
     fun testCalibrationFromSyntheticData() {
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1),
-                HelioStatParameters.ServoParameters(0.002, 0.2)
+                HelioStatParameters.ServoParameters(0.001, 0.1, 0.01 + Math.PI / 2.0, -0.01),
+                HelioStatParameters.ServoParameters(0.002, 0.2, 0.02, 0.0)
         )
 
         val dataReader = CalibrationDataReadAndConvert()
