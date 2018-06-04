@@ -34,7 +34,7 @@ fun main(args : Array<String>) {
         post("navigate") { ctx ->
             val payload = ctx.bodyAsClass(NavigationQueryRead::class.java)
             ctx.status(201)
-            val navigator = HelioStatNavigator(payload[0].params)
+//            val navigator = HelioStatNavigator(payload[0].params)
 
 
 
