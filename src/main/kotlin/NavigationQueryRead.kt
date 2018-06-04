@@ -4,14 +4,12 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import java.io.BufferedReader
 import java.io.FileReader
 
-class NavigationQueryRead(val query: HelioStatNavigator.NavigationQuery) {
+class NavigationQueryRead(val query: HelioStatNavigator.NavigationQuery): ArrayList<HelioStatNavigator.NavigationQuery> () {
 
-    fun readFromFile(filename: String): ArrayList<HelioStatNavigator.NavigationQuery> {
+    fun readFromFile(filename: String){
         val gson = Gson()
         val buff = BufferedReader(FileReader(filename))
         val data = gson.fromJson(buff, NavigationRawQuery::class.java)
-
-        val queryList = ArrayList<HelioStatNavigator.NavigationQuery>()
 
         for(entry in data.entries) {
 
@@ -40,8 +38,7 @@ class NavigationQueryRead(val query: HelioStatNavigator.NavigationQuery) {
 
             val query = HelioStatNavigator.NavigationQuery(probabilisticParams, currentServoSetting, source, targetPoint)
 
-            queryList.add(query)
+            this.add(query)
         }
-        return queryList
     }
 }

@@ -34,19 +34,29 @@ fun main(args : Array<String>) {
         post("navigate") { ctx ->
             val payload = ctx.bodyAsClass(NavigationQueryRead::class.java)
             ctx.status(201)
-            val navigator = HelioStatNavigator(payload[0].params)
 
+            val settingList = ArrayList<ServoSetting>()
 
-
-
-            // get params, present control, bounds, point, solar vector
-            // return new control params
+            for (item in payload) {
+                val navigator = HelioStatNavigator(item.params)
+                val servoSetting = navigator.computeServoSettingFromDirection(ProbabilisticVector3D(item.source), item.targetPoint)
+                settingList.add(servoSetting)
+                // Todo change above to response?/?
+            }
         }
 
         post("navigatePointToPoint") {ctx ->
-            // get params, present control, bounds, point, second point
-            // return new control params
+            val payload = ctx.bodyAsClass(NavigationQueryRead::class.java)
+            ctx.status(201)
 
+            val settingList = ArrayList<ServoSetting>()
+
+            for (item in payload) {
+                val navigator = HelioStatNavigator(item.params)
+                val servoSetting = navigator.computeServoSettingFromPoint(ProbabilisticVector3D(item.source), item.targetPoint)
+                settingList.add(servoSetting)
+                // Todo change above to response?/?
+            }
         }
 
         post("/calibrate") { ctx ->
