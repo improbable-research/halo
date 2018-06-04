@@ -1,6 +1,7 @@
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
+import io.improbable.keanu.kotlin.*
 
 // Note: Sign convention:
 // Facing installation, Z runs towards one, X runs rightwards, Y runs upwards
@@ -77,5 +78,24 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
         return computeTargetFromSourceDirection(servoPitchSignal, servoRotationSignal, incomingLightDirection, distance)
     }
 
+    fun rotateVectorAroundAxisByTheta(vector: ProbabilisticVector3D, axis: ProbabilisticVector3D, theta: Double): ProbabilisticVector3D {
+        val u = axis
+        val cosTheta = Math.cos(theta)
+        val oneMinusCosTheta = 1.0 - cosTheta
+        val sinTheta = Math.sin(theta)
 
+        var resultX = vector.x * (cosTheta + u.x * u.x * oneMinusCosTheta)
+        resultX *= u.x * u.y * oneMinusCosTheta - u.z * sinTheta
+        resultX *= u.x * u.z * oneMinusCosTheta + u.y * sinTheta
+
+        var resultY = vector.y * (u.y * u.x * oneMinusCosTheta + u.z * sinTheta)
+        resultY *= cosTheta + u.y * u.y * oneMinusCosTheta
+        resultY *= u.y * u.z * oneMinusCosTheta - u.x * sinTheta
+
+        var resultZ = vector.z * (u.z * u.x * oneMinusCosTheta - u.y * sinTheta)
+        resultZ *= u.z * u.y * oneMinusCosTheta + u.x * sinTheta
+        resultZ *= cosTheta + u.z * u.z * oneMinusCosTheta
+
+        return ProbabilisticVector3D(resultX, resultY, resultZ)
+    }
 }
