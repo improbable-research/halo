@@ -48,8 +48,9 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
         this.clear()
         for (i in 1..nSamples) {
             val control = ServoSetting(
-                    ((rand.nextDouble() * 2.0 * PI - params.rotationParameters.c) / params.rotationParameters.m).roundToInt(),
-                    (((rand.nextDouble()-0.5) * 2.0 * PI - params.pitchParameters.c) / params.pitchParameters.m).roundToInt()
+                    (((rand.nextDouble()-0.5) * 2.0 * PI - params.rotationParameters.c) / params.rotationParameters.m).roundToInt(),
+//                    (((rand.nextDouble()-0.5) * 2.0 * PI - params.pitchParameters.c) / params.pitchParameters.m).roundToInt()
+                    ((rand.nextDouble() * 0.5 * PI - params.pitchParameters.c) / params.pitchParameters.m).roundToInt()
             )
 
             // TODO add some gaussian noise and see how it performs as the noise increases
@@ -64,6 +65,7 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
             plane.z.lazyEval()
 
             var modelledPlaneSpherical = plane.getValue()
+            println("length err is ${modelledPlaneSpherical.x - forwardModel.computePlaneDistanceFromOrigin(modelledPlaneSpherical.y, modelledPlaneSpherical.z).value}")
 //            if (control.pitch < 0) {
 //                modelledPlaneSpherical = Geometry.erectToFlacid(modelledPlaneSpherical)
 //            }

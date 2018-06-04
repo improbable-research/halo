@@ -23,9 +23,15 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
 
     fun inferPivotPoint() : Vector3D {
         val helioStat = HelioStat(ProbabilisticHelioStatParameters())
+
+        helioStat.params.pivotPoint.x.value = 1.0
+        helioStat.params.pivotPoint.y.value = 1.0
+        helioStat.params.pivotPoint.z.value = 1.0
+
         for(dataPoint in this) {
             val modelledLength = helioStat.computePlaneDistanceFromOrigin(dataPoint.pitch,dataPoint.rotation)
             GaussianVertex(modelledLength, 0.001).observe(dataPoint.length)
+            println("Err ${modelledLength.value - dataPoint.length}")
         }
         val model = BayesNet(helioStat.params.pivotPoint.x.connectedGraph)
         val optimiser = GradientOptimizer(model)

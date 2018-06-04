@@ -18,8 +18,8 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
         val pitchAxis = ProbabilisticVector3D(ConstantDoubleVertex(1.0), params.pitchParameters.axisPitch, params.pitchParameters.axisRotation)
         val cartesianPitchAxis = pitchAxis.sphericalToCartesian()
         val rotationAxis = ProbabilisticVector3D(ConstantDoubleVertex(1.0), params.rotationParameters.axisPitch, params.rotationParameters.axisRotation)
-        val cartesianRotationAxis = pitchAxis.sphericalToCartesian()
-        var result = rotationAxis
+        val cartesianRotationAxis = rotationAxis.sphericalToCartesian()
+        var result = cartesianRotationAxis*(-1.0)
         result = rotateVectorAroundAxisByTheta(result, cartesianPitchAxis, servoPitch)
         result = rotateVectorAroundAxisByTheta(result, cartesianRotationAxis, servoRotation)
         return result
@@ -67,8 +67,7 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
                                          incomingLightDirection: ProbabilisticVector3D,
                                          distance: DoubleVertex): ProbabilisticVector3D {
         val heliostatCentreLocation = computeHeliostatCentrePoint(servoPitchSignal, servoRotationSignal)
-        val heliostatPlane = computeHeliostatPlane(servoPitchSignal, servoRotationSignal)
-        val unitNormal = heliostatPlane.unit()
+        val unitNormal = computeHeliostatNormal(servoPitchSignal, servoRotationSignal)
         val reflectedDirection = incomingLightDirection - unitNormal * unitNormal.dot(incomingLightDirection) * 2.0
         return heliostatCentreLocation + reflectedDirection * distance
     }
@@ -87,17 +86,17 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
         val oneMinusCosTheta = 1.0 - cosTheta
         val sinTheta = sin(theta)
 
-        var resultX = vector.x * (cosTheta + u.x * u.x * oneMinusCosTheta)
-        resultX *= u.x * u.y * oneMinusCosTheta - u.z * sinTheta
-        resultX *= u.x * u.z * oneMinusCosTheta + u.y * sinTheta
+        var resultX = vector.x * (cosTheta + u.x * u.x * oneMinusCosTheta) +
+                vector.y * (u.x * u.y * oneMinusCosTheta - u.z * sinTheta) +
+                vector.z * (u.x * u.z * oneMinusCosTheta + u.y * sinTheta)
 
-        var resultY = vector.y * (u.y * u.x * oneMinusCosTheta + u.z * sinTheta)
-        resultY *= cosTheta + u.y * u.y * oneMinusCosTheta
-        resultY *= u.y * u.z * oneMinusCosTheta - u.x * sinTheta
+        var resultY = vector.x * (u.y * u.x * oneMinusCosTheta + u.z * sinTheta) +
+            vector.y * (cosTheta + u.y * u.y * oneMinusCosTheta) +
+            vector.z * (u.y * u.z * oneMinusCosTheta - u.x * sinTheta)
 
-        var resultZ = vector.z * (u.z * u.x * oneMinusCosTheta - u.y * sinTheta)
-        resultZ *= u.z * u.y * oneMinusCosTheta + u.x * sinTheta
-        resultZ *= cosTheta + u.z * u.z * oneMinusCosTheta
+        var resultZ = vector.x * (u.z * u.x * oneMinusCosTheta - u.y * sinTheta) +
+                vector.y * (u.z * u.y * oneMinusCosTheta + u.x * sinTheta) +
+                vector.z * (cosTheta + u.z * u.z * oneMinusCosTheta)
 
         return ProbabilisticVector3D(resultX, resultY, resultZ)
     }

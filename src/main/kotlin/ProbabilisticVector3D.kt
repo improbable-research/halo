@@ -63,9 +63,9 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
         return ProbabilisticVector3D(x * scalar, y * scalar, z * scalar)
     }
 
-    fun unit(): ProbabilisticVector3D {
-        return this / length()
-    }
+//    fun unit(): ProbabilisticVector3D {
+//        return this / length()
+//    }
 
     fun noisyObserve(observation : Vector3D, uncertainty : Vector3D) {
         GaussianVertex(x, uncertainty.x).observe(observation.x)
@@ -78,9 +78,9 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
     }
 
     fun sphericalToCartesian() : ProbabilisticVector3D {
-        return ProbabilisticVector3D(sin(y) * cos(z),
-                cos(y),
-                sin(y) * sin(z))
+        return ProbabilisticVector3D(x * sin(y) * cos(z),
+                x * cos(y),
+                x * sin(y) * sin(z))
     }
 
     fun normalize() : ProbabilisticVector3D {
@@ -92,6 +92,7 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
         return ProbabilisticVector3D(length(),
                 acos(unitVector.y),
                 ArcTanVertex(unitVector.z/unitVector.x)
+        // TODO: arctan only works in one half of the plane, need to add atan2 vertex to deal with the whole plane
         )
     }
 }

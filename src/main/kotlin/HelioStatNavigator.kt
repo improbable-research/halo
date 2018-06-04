@@ -18,8 +18,8 @@ class HelioStatNavigator {
     val model : HelioStat
 
     constructor(params : HelioStatParameters) {
-        servoPitchRange = UniformVertex(-1000.0, 8096.0)
-        servoRotationRange = UniformVertex(-1000.0, 8096.0)
+        servoPitchRange = UniformVertex(-10000.0, 8096.0)
+        servoRotationRange = UniformVertex(-10000.0, 8096.0)
         targetDistance = UniformVertex(-100.0, 100.0)
         model = HelioStat(ProbabilisticHelioStatParameters(params))
         servoPitchRange.value = 2000.0
@@ -41,7 +41,7 @@ class HelioStatNavigator {
         val targetObservationNoise = Vector3D(0.01, 0.01, 0.01)
         probabilisticTargetPoint.noisyObserve(desiredTargetPoint, targetObservationNoise)
 
-        val net = BayesNet(probabilisticTargetPoint.x.connectedGraph)
+        val net = BayesNet((servoRotationRange + servoPitchRange).connectedGraph)
 
         val optimiser = GradientOptimizer(net)
         optimiser.maxAPosteriori(10000,
