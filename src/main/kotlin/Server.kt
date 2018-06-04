@@ -1,8 +1,10 @@
 import io.javalin.ApiBuilder.get
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class Server {
+
     val app = Javalin.create().apply {
         port(8080)
         exception(Exception::class.java) {e, ctx -> e.printStackTrace()}
@@ -11,43 +13,49 @@ class Server {
 
     constructor() {
         app.routes {
-
-            post("/postTest") {ctx ->
-                ctx.json(TestPayload("got post test", 1234))
-            }
-
-            post("/payloadTest") {ctx ->
-                val payload = ctx.bodyAsClass(TestPayload::class.java)
-                ctx.json(payload)
-            }
-
-            get("/getTest/:id") { ctx ->
-                ctx.json(TestPayload(ctx.queryParam("x")?:"no value", ctx.param("id").orEmpty().toInt()))
-            }
-
             get("/test") { ctx ->
-//                ctx.json(HelioStatCalibration(listOf(HelioStatCalibration.DataPoint(Vector3D(0.1,0.2,0.3), ServoSetting(1,2)))))
+                ctx.json("Server running")
             }
 
-            post("/runModel") { ctx ->
+            post("/setMirrorNormal") { ctx ->
+                val query = ctx.bodyAsClass(Query.SetNormal::class.java)
+                ctx.status(201)
 
-                //response in JSON
+                val navigator = HelioStatNavigator(query.params)
+                val servoSetting = navigator.normalToServoSignal(query.mirrorNormal)
+                ctx.json(servoSetting)
             }
 
-            post("/navigateToPoint") { ctx ->
-                // get params, present control, bounds, point, solar vector
-                // return new control params
+            post("/navigate") { ctx ->
+                val query = ctx.bodyAsClass(Query.Navigation::class.java)
+                ctx.status(201)
+
+                val navigator = HelioStatNavigator(query.params)
+                val servoSetting = navigator.computeServoSettingFromDirection(query.source, query.targetPoint, query.currentServoSetting)
+                ctx.json(servoSetting)
             }
 
             post("/navigatePointToPoint") { ctx ->
-                // get params, present control, bounds, point, second point
-                // return new control params
+                val query = ctx.bodyAsClass(Query.Navigation::class.java)
+                ctx.status(201)
 
+                val navigator = HelioStatNavigator(query.params)
+                val servoSetting = navigator.computeServoSettingFromPoint(query.source, query.targetPoint, query.currentServoSetting)
+                ctx.json(servoSetting)
             }
 
             post("/calibrate") { ctx ->
-                val payload = ctx.bodyAsClass(TestPayload::class.java)
+                val payload = ctx.bodyAsClass(CalibrationDataReadAndConvert::class.java)
                 ctx.status(201)
+
+
+                var calib = HelioStatCalibration(payload)
+                var params = calib.inferAllParams()
+
+                // todo Get one with no dodgy data points and see the residual. Multiply by 5 and set that as a threshold.
+                var avResidual = calib.calculateResiduals(params).sumByDouble(Vector3D::getNorm) / calib.size
+
+                ctx.json(params)
 
                 // receive whole caboodle in JSON format
                 // return parameters
