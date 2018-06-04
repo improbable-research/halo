@@ -25,7 +25,7 @@ class RayToPointTest {
                 ProbabilisticVector3D(sunVector),
                 ConstantDoubleVertex(distance)).getValue()
 
-        val servoSetting = navigator.computeServoSettingFromDirection(sunVector, target, ServoSetting(pitch + 100, rotation + 100))
+        val servoSetting = navigator.computeServoSettingFromDirection(sunVector, target, ServoSetting(rotation + 100, pitch + 100))
         println("Servo setting pitch/rotation is ${servoSetting.pitch} ${servoSetting.rotation}")
         assert(servoSetting.pitch == pitch)
         assert(servoSetting.rotation == rotation)

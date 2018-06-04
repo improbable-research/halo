@@ -28,7 +28,7 @@ class PointToPointTest {
         ).getValue()
 
         val servoSetting = navigator.computeServoSettingFromPoint(sourcePoint, target,
-                ServoSetting(pitch + 100, rotation + 100)
+                ServoSetting(rotation + 100, pitch + 100)
         )
         println("Servo setting pitch/rotation is ${servoSetting.pitch} ${servoSetting.rotation}")
         assert(servoSetting.pitch == pitch)
