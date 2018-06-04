@@ -1,5 +1,9 @@
+import io.improbable.keanu.kotlin.acos
+import io.improbable.keanu.kotlin.cos
+import io.improbable.keanu.kotlin.sin
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
+import io.improbable.keanu.vertices.dbl.nonprobabilistic.operators.unary.ArcTanVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
@@ -71,5 +75,23 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
 
     fun getValue() : Vector3D {
         return(Vector3D(x.value, y.value, z.value))
+    }
+
+    fun sphericalToCartesian() : ProbabilisticVector3D {
+        return ProbabilisticVector3D(sin(y) * cos(z),
+                cos(y),
+                sin(y) * sin(z))
+    }
+
+    fun normalize() : ProbabilisticVector3D {
+        return this * lengthSquared().pow(-0.5)
+    }
+
+    fun cartesianToSpherical() : ProbabilisticVector3D {
+        val unitVector = normalize()
+        return ProbabilisticVector3D(length(),
+                acos(unitVector.y),
+                ArcTanVertex(unitVector.z/unitVector.x)
+        )
     }
 }
