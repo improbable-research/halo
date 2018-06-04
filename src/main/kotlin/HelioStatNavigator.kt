@@ -6,7 +6,10 @@ import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
 import kotlin.math.roundToInt
 
-class HelioStatNavigator(var params: ProbabilisticHelioStatParameters) {
+class HelioStatNavigator(params: ProbabilisticHelioStatParameters) {
+
+    class NavigationQuery (var params: ProbabilisticHelioStatParameters, var presentControl: ServoSetting,
+                           var targetPoint: Vector3D, var source: Vector3D) {}
 
     val servoPitchRange = UniformVertex(0.0, 4096.0)
     val servoRotationRange = UniformVertex(0.0, 4096.0)

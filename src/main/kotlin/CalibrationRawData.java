@@ -16,5 +16,4 @@ public class CalibrationRawData extends HashMap<String, CalibrationRawData.DataP
         String center;
         String normal;
     }
-
 }

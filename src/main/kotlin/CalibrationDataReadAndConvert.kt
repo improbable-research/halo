@@ -15,7 +15,8 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
         val gson = Gson()
         var buff = BufferedReader(FileReader(filename))
         val data = gson.fromJson(buff, CalibrationRawData::class.java)
-        for(entry in data) {
+
+        for(entry in data.entries) {
             val abcd = entry.value.data.plane.ABCD.split(",").map(String::toDouble)
             val length = abcd[3]
             val cartesianPlane = Vector3D(abcd[0], abcd[1], abcd[2]).normalize()
@@ -25,12 +26,7 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
                                                sphericalPlane.z,
                                                ServoSetting(entry.value.servoPositions["209"] ?: 0,
                                                               entry.value.servoPositions["210"] ?: 0)))
-//            println(entry.key)
-//            println(entry.value.servoPositions)
-//            println("${entry.value.servoPositions["209"]?:0}, ${entry.value.servoPositions["210"]?:0}")
-//            println(entry.value.data.plane.ABCD.split(",").map(String::toDouble))
-//            println("cartesian is $cartesianPlane")
-//            println(sphericalPlane)
+            //debug_printEntries(entry.key, entry.value, cartesianPlane, sphericalPlane)
         }
     }
 
@@ -73,6 +69,15 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
             println("modelled plane: $modelledPlaneSpherical")
             this.add(HelioStatCalibration.DataPoint(modelledPlaneSpherical.x, modelledPlaneSpherical.y, modelledPlaneSpherical.z, control))
         }
+    }
+
+    fun debug_printEntries(key: String, value: CalibrationRawData.DataPoint, cartesianPlane: Vector3D, sphericalPlane: Vector3D) {
+            println(key)
+            println(value.servoPositions)
+            println("${value.servoPositions["209"]?:0}, ${value.servoPositions["210"]?:0}")
+            println(value.data.plane.ABCD.split(",").map(String::toDouble))
+            println("cartesian is $cartesianPlane")
+            println(sphericalPlane)
     }
 }
 

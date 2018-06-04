@@ -32,7 +32,13 @@ fun main(args : Array<String>) {
         }
 
         post("navigate") { ctx ->
-            // val payload = ctx.bodyAsClass()
+            val payload = ctx.bodyAsClass(NavigationQueryRead::class.java)
+            ctx.status(201)
+            val navigator = HelioStatNavigator(payload[0].params)
+
+
+
+
             // get params, present control, bounds, point, solar vector
             // return new control params
         }
