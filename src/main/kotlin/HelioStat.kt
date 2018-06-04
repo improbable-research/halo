@@ -11,6 +11,7 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
 
     constructor(params : HelioStatParameters) : this(ProbabilisticHelioStatParameters(params)) {}
 
+
     fun servoSignalToUnitSpherical(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex) : ProbabilisticVector3D {
         return ProbabilisticVector3D(ConstantDoubleVertex(1.0),
                                   params.pitchParameters.m * servoPitchSignal + params.pitchParameters.c,

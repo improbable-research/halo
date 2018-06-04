@@ -27,6 +27,14 @@ class HelioStatNavigator {
         targetDistance.value = 5.0
     }
 
+    fun normalToServoSignal(mirrorNormal : Vector3D) : ServoSetting {
+        val sphericalNormal = Geometry.cartesianToSpherical(mirrorNormal)
+        return ServoSetting(
+                ((sphericalNormal.z - model.params.rotationParameters.c.value)/model.params.rotationParameters.m.value).roundToInt(),
+                ((sphericalNormal.y - model.params.pitchParameters.c.value)/model.params.pitchParameters.m.value).roundToInt()
+        )
+    }
+    
     private fun computeServoSetting(probabilisticTargetPoint: ProbabilisticVector3D,
                                     desiredTargetPoint: Vector3D): ServoSetting {
 
