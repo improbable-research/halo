@@ -39,7 +39,7 @@ fun main(args : Array<String>) {
 
             for (item in payload) {
                 val navigator = HelioStatNavigator(item.params)
-                val servoSetting = navigator.computeServoSettingFromDirection(ProbabilisticVector3D(item.source), item.targetPoint)
+                val servoSetting = navigator.computeServoSettingFromDirection(item.source, item.targetPoint)
                 settingList.add(servoSetting)
                 // Todo change above to response?/?
             }
@@ -53,7 +53,7 @@ fun main(args : Array<String>) {
 
             for (item in payload) {
                 val navigator = HelioStatNavigator(item.params)
-                val servoSetting = navigator.computeServoSettingFromPoint(ProbabilisticVector3D(item.source), item.targetPoint)
+                val servoSetting = navigator.computeServoSettingFromPoint(item.source, item.targetPoint)
                 settingList.add(servoSetting)
                 // Todo change above to response?/?
             }

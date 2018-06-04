@@ -9,6 +9,8 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
 
     var heliostatOffsetFromPivot = 0.144 // measured with caliper, variance sub-millimetre
 
+    constructor(params : HelioStatParameters) : this(ProbabilisticHelioStatParameters(params)) {}
+
     fun servoSignalToUnitSpherical(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex) : ProbabilisticVector3D {
         return ProbabilisticVector3D(ConstantDoubleVertex(1.0),
                                   params.pitchParameters.m * servoPitchSignal + params.pitchParameters.c,
@@ -62,15 +64,15 @@ class HelioStat (var params: ProbabilisticHelioStatParameters) {
         val heliostatCentreLocation = computeHeliostatCentrePoint(servoPitchSignal, servoRotationSignal)
         val heliostatPlane = computeHeliostatPlane(servoPitchSignal, servoRotationSignal)
         val unitNormal = heliostatPlane.unit()
-        val reflectedDirection = incomingLightDirection - unitNormal * incomingLightDirection.dot(unitNormal) * 2.0
+        val reflectedDirection = incomingLightDirection - unitNormal * unitNormal.dot(incomingLightDirection) * 2.0
         return heliostatCentreLocation + reflectedDirection * distance
     }
 
     fun computeTargetFromSourcePoint(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex,
-                                     sourcePoint: ProbabilisticVector3D,
+                                     sourcePoint: Vector3D,
                                      distance: DoubleVertex): ProbabilisticVector3D {
         val centrePoint = computeHeliostatCentrePoint(servoPitchSignal, servoRotationSignal)
-        val incomingLightDirection = sourcePoint - centrePoint
+        val incomingLightDirection = ProbabilisticVector3D(sourcePoint) - centrePoint
         return computeTargetFromSourceDirection(servoPitchSignal, servoRotationSignal, incomingLightDirection, distance)
     }
 

@@ -24,6 +24,7 @@ public class CalibrationTest {
         }
     }
 
+
     @Test
     fun testCalibrationFromSyntheticData() {
         val testParams = HelioStatParameters(
@@ -32,23 +33,15 @@ public class CalibrationTest {
                 HelioStatParameters.ServoParameters(0.002, 0.2)
         )
 
-
         val dataReader = CalibrationDataReadAndConvert()
         dataReader.createSyntheticTrainingSet(30, testParams)
-        val calibrator = HelioStatCalibration()
-
-
+        val calibrator = HelioStatCalibration(dataReader)
 
         val bestParams = calibrator.inferAllParams()
         println("Modelled params are: $bestParams")
         val r = calibrator.calculateResiduals(bestParams)
         val residual = r.sumByDouble(Vector3D::getNorm) / r.size
         println("average residual is $residual")
-
-        // TODO should be small and uncorrelated - if there's a shape, then stick it in the model and regress to that.
-        for (i in 0 until calibrator.size) {
-            println("${calibrator[i].control.pitch} ${calibrator[i].control.rotation} ${r[i].x} ${r[i].y} ${r[i].z}")
-        }
-
+        assert(residual < 1e-6)
     }
 }

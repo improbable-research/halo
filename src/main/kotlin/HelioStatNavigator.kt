@@ -1,25 +1,36 @@
 import io.improbable.keanu.algorithms.variational.GradientOptimizer
 import io.improbable.keanu.network.BayesNet
+import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.UniformVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
 import kotlin.math.roundToInt
 
-class HelioStatNavigator(params: ProbabilisticHelioStatParameters) {
+class HelioStatNavigator {
 
-    class NavigationQuery (var params: ProbabilisticHelioStatParameters, var presentControl: ServoSetting,
+    class NavigationQuery (var params: HelioStatParameters, var presentControl: ServoSetting,
                            var targetPoint: Vector3D, var source: Vector3D) {}
 
-    val servoPitchRange = UniformVertex(0.0, 4096.0)
-    val servoRotationRange = UniformVertex(0.0, 4096.0)
-    val targetDistance = UniformVertex(1.0, 20.0)
-    val model = HelioStat(params)
+    val servoPitchRange : DoubleVertex
+    val servoRotationRange : DoubleVertex
+    val targetDistance : DoubleVertex
+    val model : HelioStat
 
-    fun computeServoSetting(probabilisticTargetPoint: ProbabilisticVector3D,
-                            desiredTargetPoint: Vector3D): ServoSetting {
+    constructor(params : HelioStatParameters) {
+        servoPitchRange = UniformVertex(-1000.0, 8096.0)
+        servoRotationRange = UniformVertex(-1000.0, 8096.0)
+        targetDistance = UniformVertex(-100.0, 100.0)
+        model = HelioStat(ProbabilisticHelioStatParameters(params))
+        servoPitchRange.value = 2000.0
+        servoRotationRange.value = 2000.0
+        targetDistance.value = 5.0
+    }
 
-        val targetObservationNoise = Vector3D(1.0, 1.0, 1.0)
+    private fun computeServoSetting(probabilisticTargetPoint: ProbabilisticVector3D,
+                                    desiredTargetPoint: Vector3D): ServoSetting {
+
+        val targetObservationNoise = Vector3D(0.01, 0.01, 0.01)
         probabilisticTargetPoint.noisyObserve(desiredTargetPoint, targetObservationNoise)
 
         val net = BayesNet(probabilisticTargetPoint.x.connectedGraph)
@@ -32,14 +43,15 @@ class HelioStatNavigator(params: ProbabilisticHelioStatParameters) {
         return ServoSetting(servoRotationRange.value.roundToInt(), servoPitchRange.value.roundToInt())
     }
 
-    fun computeServoSettingFromDirection(incomingSunDirection: ProbabilisticVector3D,
+    fun computeServoSettingFromDirection(incomingSunDirection: Vector3D,
                                          desiredTargetPoint: Vector3D): ServoSetting {
+        targetDistance.value = 5.0
         val probabilisticTargetPoint = model.computeTargetFromSourceDirection(servoPitchRange, servoRotationRange,
-                                                                              incomingSunDirection, targetDistance)
+                                                                              ProbabilisticVector3D(incomingSunDirection), targetDistance)
         return computeServoSetting(probabilisticTargetPoint, desiredTargetPoint)
     }
 
-    fun computeServoSettingFromPoint(sourcePoint: ProbabilisticVector3D, desiredTargetPoint: Vector3D): ServoSetting {
+    fun computeServoSettingFromPoint(sourcePoint: Vector3D, desiredTargetPoint: Vector3D): ServoSetting {
 
         val probabilisticTargetPoint = model.computeTargetFromSourcePoint(servoPitchRange, servoRotationRange,
                                                                           sourcePoint, targetDistance)
