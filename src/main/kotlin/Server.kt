@@ -1,4 +1,4 @@
-import httpRequests.JsonUtils
+import httpRequests.Json
 import io.javalin.ApiBuilder.get
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
@@ -32,7 +32,7 @@ class Server {
             }
 
             post("/navigate") { ctx ->
-                val query = JsonUtils.fromJson(ctx.body(), Query.Navigation::class.java)
+                val query = Json.fromJson(ctx.body(), Query.Navigation::class.java)
                 ctx.status(201)
 
                 val navigator = HelioStatNavigator(query.params)
@@ -41,7 +41,7 @@ class Server {
             }
 
             post("/navigatePointToPoint") { ctx ->
-                val query = JsonUtils.fromJson(ctx.body(), Query.Navigation::class.java)
+                val query = Json.fromJson(ctx.body(), Query.Navigation::class.java)
                 ctx.status(201)
 
                 val navigator = HelioStatNavigator(query.params)
@@ -50,17 +50,20 @@ class Server {
             }
 
             post("/calibrate") { ctx ->
-                val payload = ctx.bodyAsClass(CalibrationDataReadAndConvert::class.java)
+                val calibrationData = Json.fromJson(ctx.body(), CalibrationDataReadAndConvert::class.java)
                 ctx.status(201)
 
-
-                var calib = HelioStatCalibration(payload)
+                var calib = HelioStatCalibration(calibrationData)
                 var params = calib.inferAllParams()
 
                 // todo Get one with no dodgy data points and see the residual. Multiply by 5 and set that as a threshold.
                 var avResidual = calib.calculateResiduals(params).sumByDouble(Vector3D::getNorm) / calib.size
 
-                ctx.json(params)
+                val paramsJson = Json.toJson(params)
+
+                // Pretend this is html to get around the inbuilt Jackson json serialization, which doesn't seem to
+                // handle complex objects well.
+                ctx.html(paramsJson)
 
                 // receive whole caboodle in JSON format
                 // return parameters

@@ -11,7 +11,7 @@ import java.net.URLEncoder
 class HttpRequest {
 
     companion object {
-        fun get(url: String, requestParams: String): StringBuffer {
+        fun get(url: String, requestParams: String): String {
 
             val mURL = URL(url + "?" + requestParams)
 
@@ -31,12 +31,12 @@ class HttpRequest {
                     }
                     it.close()
 
-                    return response
+                    return response.toString()
                 }
             }
         }
 
-        fun post(url: String, requestParams: String): StringBuffer {
+        fun post(url: String, requestParams: String): String {
 
             val mURL = URL(url)
 
@@ -61,7 +61,7 @@ class HttpRequest {
                     }
                     it.close()
 
-                    return response
+                    return response.toString()
                 }
             }
         }

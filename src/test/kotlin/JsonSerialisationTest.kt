@@ -1,5 +1,5 @@
 import com.google.gson.Gson
-import httpRequests.JsonUtils
+import httpRequests.Json
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.junit.Test
@@ -11,11 +11,11 @@ class JsonSerialisationTest {
         val obj = Student("Steve", 9)
         println("Before: $obj")
 
-        val json = JsonUtils.toJson(obj)
+        val json = Json.toJson(obj)
         println("JSON:")
         println(json)
 
-        val after = JsonUtils.fromJson(json, Student::class.java)
+        val after = Json.fromJson(json, Student::class.java)
         println("After: $after")
 
         assert(obj.name.equals(after.name))
@@ -27,11 +27,11 @@ class JsonSerialisationTest {
         val obj = StudentKt("Steve", 9)
         println("Before: $obj")
 
-        val json = JsonUtils.toJson(obj)
+        val json = Json.toJson(obj)
         println("JSON:")
         println(json)
 
-        val after = JsonUtils.fromJson(json, StudentKt::class.java)
+        val after = Json.fromJson(json, StudentKt::class.java)
         println("After: $after")
 
         assert(obj.name.equals(after.name))
@@ -68,7 +68,7 @@ class JsonSerialisationTest {
 
         println(queryJson)
 
-        val rebuiltQuery = JsonUtils.fromJson(queryJson, Query.Navigation::class.java)
+        val rebuiltQuery = Json.fromJson(queryJson, Query.Navigation::class.java)
 
         assert(query.source.x == rebuiltQuery.source.x)
         assert(query.source.y == rebuiltQuery.source.y)
