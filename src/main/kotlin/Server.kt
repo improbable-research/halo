@@ -1,4 +1,3 @@
-import httpRequests.Json
 import io.javalin.ApiBuilder.get
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
@@ -23,7 +22,7 @@ class Server {
             }
 
             post("/setMirrorNormal") { ctx ->
-                val query = ctx.bodyAsClass(Query.SetNormal::class.java)
+                val query = Json.fromJson(ctx.body(), Query.SetNormal::class.java)
                 ctx.status(201)
 
                 val navigator = HelioStatNavigator(query.params)

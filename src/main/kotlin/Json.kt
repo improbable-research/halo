@@ -1,5 +1,3 @@
-package httpRequests
-
 import com.google.gson.Gson
 
 class Json {

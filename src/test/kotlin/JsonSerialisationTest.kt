@@ -1,5 +1,4 @@
 import com.google.gson.Gson
-import httpRequests.Json
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.junit.Test
