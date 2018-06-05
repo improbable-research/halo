@@ -6,7 +6,7 @@ public class CalibrationTest {
     fun testCalibrationFromFile() {
 
         val dataReader = CalibrationDataReadAndConvert()
-        dataReader.readFromFile("calibrationData.json")
+        dataReader.readFromFileFormat2("heliostatData.json")
         dataReader.randomSubSample(20)
 
         val calibrator = HelioStatCalibration(dataReader)
@@ -40,7 +40,7 @@ public class CalibrationTest {
         )
 
         val dataReader = CalibrationDataReadAndConvert()
-        dataReader.createSyntheticTrainingSet(30, testParams)
+        dataReader.createSyntheticTrainingSet(40, testParams)
         val calibrator = HelioStatCalibration(dataReader)
 
         val bestParams = calibrator.inferAllParams()
@@ -48,6 +48,6 @@ public class CalibrationTest {
         val r = calibrator.calculateResiduals(bestParams)
         val residual = r.sumByDouble(Vector3D::getNorm) / r.size
         println("average residual is $residual")
-        assert(residual < 1e-6)
+        assert(residual < 1e-2)
     }
 }

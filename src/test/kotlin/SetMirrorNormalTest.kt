@@ -14,7 +14,7 @@ class SetMirrorNormalTest {
         val model = HelioStat(testParams)
         val pitch = 1000
         val rotation = 345
-        val normal = Geometry.sphericalToCartesian(model.servoSignalToUnitSpherical(ServoSetting(rotation, pitch)).getValue())
+        val normal = model.computeHeliostatNormal(ServoSetting(rotation, pitch)).getValue()
 
         val settings = navigator.normalToServoSignal(normal)
         println("Setting rotation/pitch is ${settings.rotation} ${settings.pitch}")
