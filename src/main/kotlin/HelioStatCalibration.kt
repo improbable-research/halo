@@ -84,8 +84,8 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
 
         for (dataPoint in this) {
             val sphericalNorm = helioStat.linearSphericalNormalModel(dataPoint.control)
-            GaussianVertex(sphericalNorm.y,0.005).observe(dataPoint.pitch)
-            GaussianVertex(sphericalNorm.z, 0.005).observe(dataPoint.rotation)
+            GaussianVertex(sphericalNorm.y,0.001).observe(dataPoint.pitch)
+            GaussianVertex(sphericalNorm.z, 0.001).observe(dataPoint.rotation)
         }
 
         val pmodel = BayesNet(helioStat.params.pitchParameters.m.connectedGraph)

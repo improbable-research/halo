@@ -40,7 +40,7 @@ public class CalibrationTest {
         )
 
         val dataReader = CalibrationDataReadAndConvert()
-        dataReader.createSyntheticTrainingSet(40, testParams)
+        dataReader.createSyntheticTrainingSet(30, testParams)
         val calibrator = HelioStatCalibration(dataReader)
 
         val bestParams = calibrator.inferAllParams()

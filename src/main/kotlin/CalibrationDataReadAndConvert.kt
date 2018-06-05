@@ -73,8 +73,8 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
         val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
         this.clear()
         for (i in 1..nSamples) {
-            var pitch = rand.nextDouble() * 0.5 * PI
-            var rotation = (rand.nextDouble()-0.5) * 2.0 * PI
+            var pitch = (rand.nextDouble()-0.5) * PI
+            var rotation = rand.nextDouble() * PI
             var normal = Geometry.sphericalToCartesian(Vector3D(1.0, pitch, rotation))
             val control = HelioStatNavigator(params).normalToServoSignal(normal)
 
@@ -108,6 +108,11 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
 fun main(args : Array<String>) {
     var c = CalibrationDataReadAndConvert()
     c.readFromFileFormat2("heliostatData.json")
+    c.createSyntheticTrainingSet(40, HelioStatParameters(
+            Vector3D(1.0, 1.0, 1.0),
+            HelioStatParameters.ServoParameters(0.001, 0.1, Math.PI / 2.0, -Math.PI/2.0),
+            HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI, 0.0)
+    ))
     for(entry in c) {
         println(entry)
     }

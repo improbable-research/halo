@@ -53,11 +53,10 @@ class ServerTest {
     }
 
     private fun setMirrorNormal() {
-
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1, -0.02 + Math.PI / 2.0, 0.03),
-                HelioStatParameters.ServoParameters(0.002, 0.2, 0.02, Math.PI)
+                HelioStatParameters.ServoParameters(0.001, 0.1, -0.02 + Math.PI / 2.0, 0.03 - Math.PI/2.0),
+                HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI - 0.02, 0.0)
         )
 
         val model = HelioStat(testParams)
