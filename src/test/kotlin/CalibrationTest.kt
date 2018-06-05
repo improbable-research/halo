@@ -7,7 +7,7 @@ public class CalibrationTest {
 
         val dataReader = CalibrationDataReadAndConvert()
         dataReader.readFromFileFormat2("heliostatData.json")
-        dataReader.randomSubSample(20)
+//        dataReader.randomSubSample(20)
 
         val calibrator = HelioStatCalibration(dataReader)
 
@@ -19,9 +19,9 @@ public class CalibrationTest {
         println("average residual is $residual")
 
         // TODO should be small and uncorrelated - if there's a shape, then stick it in the model and regress to that.
-        for (i in 0 until calibrator.size) {
-            println("${calibrator[i].control.pitch} ${calibrator[i].control.rotation} ${r[i].x} ${r[i].y} ${r[i].z}")
-        }
+//        for (i in 0 until calibrator.size) {
+//            println("${calibrator[i].control.pitch} ${calibrator[i].control.rotation} ${r[i].x} ${r[i].y} ${r[i].z}")
+//        }
     }
 
 

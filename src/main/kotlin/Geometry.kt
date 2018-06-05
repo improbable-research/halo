@@ -10,9 +10,14 @@ object Geometry {
     }
 
     fun erectToFlacid(spherical : Vector3D) : Vector3D {
+        val rotationPerturbation : Double = if(spherical.z > 0.0) {
+            -Math.PI
+        } else {
+            Math.PI
+        }
         return Vector3D(spherical.x,
                         -spherical.y,
-                        spherical.z )
+                        spherical.z + rotationPerturbation )
     }
 
     fun sphericalToCartesian(spherical : Vector3D) : Vector3D {
