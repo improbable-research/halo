@@ -32,6 +32,13 @@ class HelioStatNavigator {
         val probNormal = model.computeHeliostatNormal(servoPitchRange, servoRotationRange)
         probNormal.noisyObserve(mirrorNormal, targetObservationNoise)
 
+        val sphericalNormal = Geometry.cartesianToSpherical(mirrorNormal)
+        val initialGuessPitch = (sphericalNormal.y - model.params.pitchParameters.c.value)/model.params.pitchParameters.m.value
+        val initialGuessRotation = (sphericalNormal.z - model.params.rotationParameters.c.value)/model.params.rotationParameters.m.value
+
+        servoPitchRange.value = initialGuessPitch
+        servoRotationRange.value = initialGuessRotation
+
         val net = BayesNet((servoRotationRange + servoPitchRange).connectedGraph)
 
         val optimiser = GradientOptimizer(net)
