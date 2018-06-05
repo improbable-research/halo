@@ -8,11 +8,24 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class HelioStat(var params: ProbabilisticHelioStatParameters) {
 
-    var heliostatOffsetFromPivot = 0.144 // measured with caliper, variance sub-millimetre
+//    var heliostatOffsetFromPivot = 0.144 // measured with caliper, variance sub-millimetre
+    var heliostatOffsetFromPivot = 0.145 // measured with caliper, variance sub-millimetre
 
     constructor(params: HelioStatParameters) : this(ProbabilisticHelioStatParameters(params)) {}
 
-    fun servoSignalToUnitCartesian(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
+    fun computeHeliostatNormal(control: ServoSetting): ProbabilisticVector3D {
+        return computeHeliostatNormal(ConstantDoubleVertex(control.pitch.toDouble()),
+                ConstantDoubleVertex(control.rotation.toDouble()))
+    }
+
+    fun linearSphericalNormalModel(control: ServoSetting): ProbabilisticVector3D {
+        val servoPitch = params.pitchParameters.m * control.pitch.toDouble() + params.pitchParameters.c
+        val servoRotation = params.rotationParameters.m * control.rotation.toDouble() + params.rotationParameters.c
+        return ProbabilisticVector3D(ConstantDoubleVertex(1.0), servoPitch, servoRotation)
+    }
+
+
+    fun computeHeliostatNormal(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
         val servoPitch = params.pitchParameters.m * servoPitchSignal + params.pitchParameters.c
         val servoRotation = params.rotationParameters.m * servoRotationSignal + params.rotationParameters.c
         val pitchAxis = ProbabilisticVector3D(ConstantDoubleVertex(1.0), params.pitchParameters.axisPitch, params.pitchParameters.axisRotation)
@@ -23,19 +36,6 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
         result = rotateVectorAroundAxisByTheta(result, cartesianPitchAxis, servoPitch)
         result = rotateVectorAroundAxisByTheta(result, cartesianRotationAxis, servoRotation)
         return result
-    }
-
-    fun servoSignalToUnitSpherical(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
-        return servoSignalToUnitCartesian(servoPitchSignal, servoRotationSignal).cartesianToSpherical()
-    }
-
-    fun servoSignalToUnitSpherical(control: ServoSetting): ProbabilisticVector3D {
-        return servoSignalToUnitSpherical(ConstantDoubleVertex(control.pitch.toDouble()),
-                ConstantDoubleVertex(control.rotation.toDouble()))
-    }
-
-    fun computeHeliostatNormal(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
-        return servoSignalToUnitCartesian(servoPitchSignal, servoRotationSignal)
     }
 
     fun computeHeliostatCentrePoint(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
@@ -50,18 +50,11 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
         return heliostatNormal * heliostatCentreLocation.dot(heliostatNormal)
     }
 
-    fun computeHeliostatPlaneSpherical(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
-        val cartesianNorm = servoSignalToUnitCartesian(servoPitchSignal, servoRotationSignal)
-        val sphericalNorm = cartesianNorm.cartesianToSpherical()
-        return ProbabilisticVector3D(params.pivotPoint.dot(cartesianNorm) + heliostatOffsetFromPivot,
-                sphericalNorm.y,
-                sphericalNorm.z)
-    }
-
     fun computePlaneDistanceFromOrigin(pitch: Double, rotation: Double): DoubleVertex {
         val normal = Geometry.sphericalToCartesian(Vector3D(1.0, pitch, rotation))
         return params.pivotPoint.dot(normal) + heliostatOffsetFromPivot
     }
+
 
     fun computeTargetFromSourceDirection(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex,
                                          incomingLightDirection: ProbabilisticVector3D,
@@ -100,4 +93,22 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
 
         return ProbabilisticVector3D(resultX, resultY, resultZ)
     }
+
+//     --- OLD SPHERICAL STUFF
+//
+//    fun computeHeliostatNormalSpherical(control: ServoSetting): ProbabilisticVector3D {
+//        return computeHeliostatNormal(ConstantDoubleVertex(control.pitch.toDouble()),
+//                ConstantDoubleVertex(control.rotation.toDouble())).cartesianToSpherical()
+//    }
+
+//    fun computeHeliostatPlaneSpherical(servoPitchSignal: DoubleVertex, servoRotationSignal: DoubleVertex): ProbabilisticVector3D {
+//        val cartesianNorm = computeHeliostatNormal(servoPitchSignal, servoRotationSignal)
+//        val sphericalNorm = cartesianNorm.cartesianToSpherical()
+//        return ProbabilisticVector3D(params.pivotPoint.dot(cartesianNorm) + heliostatOffsetFromPivot,
+//                sphericalNorm.y,
+//                sphericalNorm.z)
+//    }
+
+
+
 }

@@ -22,23 +22,30 @@ class HelioStatNavigator {
         servoRotationRange = UniformVertex(-10000.0, 8096.0)
         targetDistance = UniformVertex(-100.0, 100.0)
         model = HelioStat(ProbabilisticHelioStatParameters(params))
-        servoPitchRange.value = 2000.0
-        servoRotationRange.value = 2000.0
+        servoPitchRange.value = 0.0
+        servoRotationRange.value = 0.0
         targetDistance.value = 5.0
     }
 
     fun normalToServoSignal(mirrorNormal : Vector3D) : ServoSetting {
-        val sphericalNormal = Geometry.cartesianToSpherical(mirrorNormal)
-        return ServoSetting(
-                ((sphericalNormal.z - model.params.rotationParameters.c.value)/model.params.rotationParameters.m.value).roundToInt(),
-                ((sphericalNormal.y - model.params.pitchParameters.c.value)/model.params.pitchParameters.m.value).roundToInt()
-        )
+        val targetObservationNoise = Vector3D(0.001, 0.001, 0.001)
+        val probNormal = model.computeHeliostatNormal(servoPitchRange, servoRotationRange)
+        probNormal.noisyObserve(mirrorNormal, targetObservationNoise)
+
+        val net = BayesNet((servoRotationRange + servoPitchRange).connectedGraph)
+
+        val optimiser = GradientOptimizer(net)
+        optimiser.maxAPosteriori(10000,
+                NonLinearConjugateGradientOptimizer(NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
+                        SimpleValueChecker(1e-15, 1e-15)))
+
+        return ServoSetting(servoRotationRange.value.roundToInt(), servoPitchRange.value.roundToInt())
     }
 
     private fun computeServoSetting(probabilisticTargetPoint: ProbabilisticVector3D,
                                     desiredTargetPoint: Vector3D): ServoSetting {
 
-        val targetObservationNoise = Vector3D(0.01, 0.01, 0.01)
+        val targetObservationNoise = Vector3D(0.001, 0.001, 0.001)
         probabilisticTargetPoint.noisyObserve(desiredTargetPoint, targetObservationNoise)
 
         val net = BayesNet((servoRotationRange + servoPitchRange).connectedGraph)

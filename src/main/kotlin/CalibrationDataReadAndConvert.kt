@@ -31,6 +31,28 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
         }
     }
 
+    fun readFromFileFormat2(filename: String) {
+        val gson = Gson()
+        var buff = BufferedReader(FileReader(filename))
+        val data = gson.fromJson(buff, CalibrationRawData2::class.java)
+
+        for(entry in data.captures) {
+            val abcd = entry.ABCD
+            var length = abcd[3]
+            var cartesianPlane = Vector3D(abcd[0], abcd[1], abcd[2]).normalize()
+            if(abcd[1] < 0.0) {
+                cartesianPlane = cartesianPlane.scalarMultiply(-1.0)
+               length *= -1.0
+            }
+            val sphericalPlane = Geometry.cartesianToSpherical(cartesianPlane)
+            add(HelioStatCalibration.DataPoint(length,
+                    sphericalPlane.y,
+                    sphericalPlane.z,
+                    ServoSetting(entry.A1, entry.A2)))
+        }
+    }
+
+
     fun randomSubSample(nSamples : Int) {
         var n = nSamples
         var i = 0
@@ -47,30 +69,25 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
         val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
         this.clear()
         for (i in 1..nSamples) {
-            val control = ServoSetting(
-                    (((rand.nextDouble()-0.5) * 2.0 * PI - params.rotationParameters.c) / params.rotationParameters.m).roundToInt(),
-//                    (((rand.nextDouble()-0.5) * 2.0 * PI - params.pitchParameters.c) / params.pitchParameters.m).roundToInt()
-                    ((rand.nextDouble() * 0.5 * PI - params.pitchParameters.c) / params.pitchParameters.m).roundToInt()
-            )
+            var pitch = rand.nextDouble() * 0.5 * PI
+            var rotation = (rand.nextDouble()-0.5) * 2.0 * PI
+            var normal = Geometry.sphericalToCartesian(Vector3D(1.0, pitch, rotation))
+            val control = HelioStatNavigator(params).normalToServoSignal(normal)
+
+            normal = forwardModel.computeHeliostatNormal(control).getValue()
+            val sphericalNormal = Geometry.cartesianToSpherical(normal)
+            pitch = sphericalNormal.y
+            rotation = sphericalNormal.z
+
+            val planeDist = forwardModel.computePlaneDistanceFromOrigin(pitch, rotation)
 
             // TODO add some gaussian noise and see how it performs as the noise increases
             // TODO See how it performs with fewer points
             // TODO Look at the residual and ensure it's just noise
-            val plane = forwardModel.computeHeliostatPlaneSpherical(
-                    ConstantDoubleVertex(control.pitch.toDouble()),
-                    ConstantDoubleVertex(control.rotation.toDouble())
-            )
-            plane.x.lazyEval()
-            plane.y.lazyEval()
-            plane.z.lazyEval()
 
-            var modelledPlaneSpherical = plane.getValue()
-            println("length err is ${modelledPlaneSpherical.x - forwardModel.computePlaneDistanceFromOrigin(modelledPlaneSpherical.y, modelledPlaneSpherical.z).value}")
-//            if (control.pitch < 0) {
-//                modelledPlaneSpherical = Geometry.erectToFlacid(modelledPlaneSpherical)
-//            }
-//            println("modelled plane: $modelledPlaneSpherical")
-            this.add(HelioStatCalibration.DataPoint(modelledPlaneSpherical.x, modelledPlaneSpherical.y, modelledPlaneSpherical.z, control))
+//            println("Err is ${Geometry.cartesianToSpherical(normal).subtract(Vector3D(1.0, pitch, rotation))}")
+
+            this.add(HelioStatCalibration.DataPoint(planeDist.value, pitch, rotation, control))
         }
     }
 
@@ -86,9 +103,8 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
 
 fun main(args : Array<String>) {
     var c = CalibrationDataReadAndConvert()
-    c.readFromFile("calibrationData.json")
+    c.readFromFileFormat2("heliostatData.json")
     for(entry in c) {
-        if(abs(entry.length) < 1.0) println("" + entry.control.pitch + " " + entry.control.rotation + " " +
-                entry.length + " " + entry.pitch + " " + entry.rotation)
+        println(entry)
     }
 }
