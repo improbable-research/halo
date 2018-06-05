@@ -14,7 +14,11 @@ class Server {
     constructor() {
         app.routes {
             get("/ping") { ctx ->
-                ctx.json("pong (server running)")
+                ctx.json("pong")
+            }
+
+            post("/ping") { ctx ->
+                ctx.json("pong")
             }
 
             post("/setMirrorNormal") { ctx ->
