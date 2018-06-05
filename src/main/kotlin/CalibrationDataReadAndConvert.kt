@@ -44,7 +44,11 @@ class CalibrationDataReadAndConvert : ArrayList<HelioStatCalibration.DataPoint> 
                 cartesianPlane = cartesianPlane.scalarMultiply(-1.0)
                length *= -1.0
             }
-            val sphericalPlane = Geometry.cartesianToSpherical(cartesianPlane)
+            var sphericalPlane = Geometry.cartesianToSpherical(cartesianPlane)
+            if(entry.A2 > 2100) {
+               sphericalPlane = Geometry.erectToFlacid(sphericalPlane)
+            }
+            if(sphericalPlane.z < -Math.PI/2) sphericalPlane = Vector3D(sphericalPlane.x, sphericalPlane.y , sphericalPlane.z +2.0*Math.PI)
             add(HelioStatCalibration.DataPoint(length,
                     sphericalPlane.y,
                     sphericalPlane.z,

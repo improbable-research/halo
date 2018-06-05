@@ -20,17 +20,14 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
     constructor() : super()
 
     fun inferAllParams() : HelioStatParameters {
-        val params = inferServoParamsLinear()
+        var params = inferServoParamsLinear()
+        params = inferServoParams(params)
         params.pivotPoint = inferPivotPoint()
         return params
     }
 
     fun inferPivotPoint() : Vector3D {
         val helioStat = HelioStat(ProbabilisticHelioStatParameters())
-
-//        helioStat.params.pivotPoint.x.value = 1.0
-//        helioStat.params.pivotPoint.y.value = 1.0
-//        helioStat.params.pivotPoint.z.value = 1.0
 
         for(dataPoint in this) {
             val modelledLength = helioStat.computePlaneDistanceFromOrigin(dataPoint.pitch, dataPoint.rotation)
@@ -46,21 +43,21 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         return(helioStat.params.pivotPoint.getValue())
     }
 
-    fun inferServoParams() : HelioStatParameters {
+    fun inferServoParams(initialGuess : HelioStatParameters) : HelioStatParameters {
         val params = ProbabilisticHelioStatParameters()
         val helioStat = HelioStat(params)
 
-        helioStat.params.pitchParameters.m.value = 0.002
-        helioStat.params.pitchParameters.c.value = 0.02
-        helioStat.params.rotationParameters.m.value = 0.003
-        helioStat.params.rotationParameters.c.value = 0.03
+        helioStat.params.pitchParameters.m.value = initialGuess.pitchParameters.m
+        helioStat.params.pitchParameters.c.value = initialGuess.pitchParameters.c
+        helioStat.params.rotationParameters.m.value = initialGuess.rotationParameters.m
+        helioStat.params.rotationParameters.c.value = initialGuess.rotationParameters.c
 
         for (dataPoint in this) {
             val cartesianNorm = helioStat.computeHeliostatNormal(dataPoint.control)
             val observedNorm = Geometry.sphericalToCartesian(Vector3D(1.0, dataPoint.pitch, dataPoint.rotation))
-            GaussianVertex(cartesianNorm.x, 0.02).observe(observedNorm.x)
-            GaussianVertex(cartesianNorm.y, 0.02).observe(observedNorm.y)
-            GaussianVertex(cartesianNorm.z, 0.02).observe(observedNorm.z)
+            GaussianVertex(cartesianNorm.x, 0.005).observe(observedNorm.x)
+            GaussianVertex(cartesianNorm.y, 0.005).observe(observedNorm.y)
+            GaussianVertex(cartesianNorm.z, 0.005).observe(observedNorm.z)
         }
         val pmodel = BayesNet(
                 helioStat.params.pitchParameters.m.connectedGraph.union(
@@ -86,25 +83,21 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         val helioStat = HelioStat(params)
 
         for (dataPoint in this) {
-            val cartesianNorm = helioStat.computeHeliostatNormal(dataPoint.control)
-            val observedNorm = Geometry.sphericalToCartesian(Vector3D(1.0, dataPoint.pitch, dataPoint.rotation))
-            GaussianVertex(cartesianNorm.x, 0.02).observe(observedNorm.x)
-            GaussianVertex(cartesianNorm.y, 0.02).observe(observedNorm.y)
-            GaussianVertex(cartesianNorm.z, 0.02).observe(observedNorm.z)
+            val sphericalNorm = helioStat.linearSphericalNormalModel(dataPoint.control)
+            GaussianVertex(sphericalNorm.y,0.005).observe(dataPoint.pitch)
+            GaussianVertex(sphericalNorm.z, 0.005).observe(dataPoint.rotation)
         }
 
-        val pmodel = BayesNet(
-                helioStat.params.pitchParameters.m.connectedGraph.union(
-                        helioStat.params.rotationParameters.m.connectedGraph.union(
-                                helioStat.params.pitchParameters.axisPitch.connectedGraph.union(
-                                        helioStat.params.rotationParameters.axisPitch.connectedGraph
-                                )
-                        )
-                )
-        )
-
+        val pmodel = BayesNet(helioStat.params.pitchParameters.m.connectedGraph)
         val poptimiser = GradientOptimizer(pmodel)
         poptimiser.maxAPosteriori(10000,
+                NonLinearConjugateGradientOptimizer(
+                        NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
+                        SimpleValueChecker(1e-16, 1e-16)))
+
+        val rmodel = BayesNet(helioStat.params.rotationParameters.m.connectedGraph)
+        val roptimiser = GradientOptimizer(rmodel)
+        roptimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(
                         NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
                         SimpleValueChecker(1e-16, 1e-16)))
@@ -123,6 +116,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
             )
             val modelledPlane = Geometry.cartesianToSpherical(plane.getValue())
             val observedPlane = Geometry.cartesianToSpherical(Geometry.sphericalToCartesian(Vector3D(dataPoint.length, dataPoint.pitch, dataPoint.rotation)))
+            println("${dataPoint.control.pitch} ${dataPoint.control.rotation} ${observedPlane.y - modelledPlane.y} ${observedPlane.z - modelledPlane.z} ${observedPlane.x - modelledPlane.x}")
             residual.add(modelledPlane.subtract(observedPlane))
         }
         return residual
