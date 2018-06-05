@@ -1,3 +1,4 @@
+import httpRequests.JsonUtils
 import io.javalin.ApiBuilder.get
 import io.javalin.ApiBuilder.post
 import io.javalin.Javalin
@@ -31,7 +32,7 @@ class Server {
             }
 
             post("/navigate") { ctx ->
-                val query = ctx.bodyAsClass(Query.Navigation::class.java)
+                val query = JsonUtils.fromJson(ctx.body(), Query.Navigation::class.java)
                 ctx.status(201)
 
                 val navigator = HelioStatNavigator(query.params)
@@ -40,7 +41,7 @@ class Server {
             }
 
             post("/navigatePointToPoint") { ctx ->
-                val query = ctx.bodyAsClass(Query.Navigation::class.java)
+                val query = JsonUtils.fromJson(ctx.body(), Query.Navigation::class.java)
                 ctx.status(201)
 
                 val navigator = HelioStatNavigator(query.params)
