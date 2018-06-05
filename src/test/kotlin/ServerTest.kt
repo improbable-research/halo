@@ -60,7 +60,6 @@ class ServerTest {
                 HelioStatParameters.ServoParameters(0.002, 0.2, 0.02, Math.PI)
         )
 
-        val navigator = HelioStatNavigator(testParams)
         val model = HelioStat(testParams)
         val pitch = 1000
         val rotation = 345

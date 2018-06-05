@@ -6,70 +6,68 @@ import java.net.URL
 import java.net.URLEncoder
 
 
-class Http {
+object Http {
 
-    companion object {
-        fun get(url: String, requestParams: String): String {
+    fun get(url: String, requestParams: String): String {
 
-            val mURL = URL(url + "?" + requestParams)
+        val mURL = URL(url + "?" + requestParams)
 
-            with(mURL.openConnection() as HttpURLConnection) {
-                requestMethod = "GET"
+        with(mURL.openConnection() as HttpURLConnection) {
+            requestMethod = "GET"
 
-                println("URL : $url")
-                println("Response Code : $responseCode")
+            println("URL : $url")
+            println("Response Code : $responseCode")
 
-                BufferedReader(InputStreamReader(inputStream)).use {
-                    val response = StringBuffer()
+            BufferedReader(InputStreamReader(inputStream)).use {
+                val response = StringBuffer()
 
-                    var inputLine = it.readLine()
-                    while (inputLine != null) {
-                        response.append(inputLine)
-                        inputLine = it.readLine()
-                    }
-                    it.close()
-
-                    return response.toString()
+                var inputLine = it.readLine()
+                while (inputLine != null) {
+                    response.append(inputLine)
+                    inputLine = it.readLine()
                 }
+                it.close()
+
+                return response.toString()
             }
         }
+    }
 
-        fun post(url: String, requestParams: String): String {
+    fun post(url: String, requestParams: String): String {
 
-            val mURL = URL(url)
+        val mURL = URL(url)
 
-            with(mURL.openConnection() as HttpURLConnection) {
-                requestMethod = "POST"
-                doOutput = true
+        with(mURL.openConnection() as HttpURLConnection) {
+            requestMethod = "POST"
+            doOutput = true
 
-                val wr = OutputStreamWriter(getOutputStream());
-                wr.write(requestParams);
-                wr.flush();
+            val wr = OutputStreamWriter(getOutputStream());
+            wr.write(requestParams);
+            wr.flush();
 
-                println("URL : $url")
-                println("Response Code : $responseCode")
+            println("URL : $url")
+            println("Response Code : $responseCode")
 
-                BufferedReader(InputStreamReader(inputStream)).use {
-                    val response = StringBuffer()
+            BufferedReader(InputStreamReader(inputStream)).use {
+                val response = StringBuffer()
 
-                    var inputLine = it.readLine()
-                    while (inputLine != null) {
-                        response.append(inputLine)
-                        inputLine = it.readLine()
-                    }
-                    it.close()
-
-                    return response.toString()
+                var inputLine = it.readLine()
+                while (inputLine != null) {
+                    response.append(inputLine)
+                    inputLine = it.readLine()
                 }
+                it.close()
+
+                return response.toString()
             }
         }
+    }
 
-        fun makeRequestParam(key: String, value: String): String {
-            return URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8")
-        }
+    fun makeRequestParam(key: String, value: String): String {
+        return URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8")
+    }
 
-        fun addRequestParamToString(key: String, value: String, string: String): String {
-            return string + "&" + URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8")
-        }
+    fun addRequestParamToString(key: String, value: String, string: String): String {
+        return string + "&" + URLEncoder.encode(key, "UTF-8") + "=" + URLEncoder.encode(value, "UTF-8")
     }
 }

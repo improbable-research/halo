@@ -1,6 +1,6 @@
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
-class Query {
+object Query {
 
     class Navigation(var params: HelioStatParameters, var currentServoSetting: ServoSetting, var targetPoint: Vector3D,
         var source: Vector3D)

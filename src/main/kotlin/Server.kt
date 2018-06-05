@@ -60,12 +60,9 @@ class Server {
 
                 val paramsJson = Json.toJson(params)
 
-                // Pretend this is html to get around the inbuilt Jackson json serialization, which doesn't seem to
-                // handle complex objects well.
+                // Pretend this is html to get around the in-built Jackson json serialization in Javalin, which doesn't
+                // seem to handle complex objects well.
                 ctx.html(paramsJson)
-
-                // receive whole caboodle in JSON format
-                // return parameters
             }
         }
     }
