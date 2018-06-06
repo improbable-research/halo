@@ -14,8 +14,7 @@ public class CalibrationTest {
         val bestParams = calibrator.inferAllParams()
         println("Modelled params are: $bestParams")
         val r = calibrator.calculateResiduals(bestParams)
-        val residual = r.sumByDouble(Vector3D::getNorm) / r.size
-        println("average residual is $residual")
+        analyzeResiduals(r)
 
         println()
         println("Individual data point log likelihoods:")
@@ -57,5 +56,20 @@ public class CalibrationTest {
         val residual = r.sumByDouble(Vector3D::getNorm) / r.size
         println("average residual is $residual")
         assert(residual < 1e-2)
+    }
+
+    fun analyzeResiduals(r : List<Vector3D>) {
+//        val residual = r.sumByDouble(Vector3D::getNorm) / r.size
+//        println("average residual is $residual")
+
+        val residualMean = r.reduce({a,b -> a.add(b)}).scalarMultiply(1.0/r.size)
+        println("residual mean is $residualMean")
+        val squaredResiduals = r.map({v -> Vector3D(v.x*v.x, v.y*v.y, v.z*v.z)})
+        val residualMeanSquared = squaredResiduals.reduce({a,b -> a.add(b)}).scalarMultiply(1.0/r.size)
+        println("residual SD is" +
+                " ${Math.sqrt(residualMeanSquared.x - residualMean.x*residualMean.x)}" +
+                " ${Math.sqrt(residualMeanSquared.y - residualMean.y*residualMean.y)}" +
+                " ${Math.sqrt(residualMeanSquared.z - residualMean.z*residualMean.z)}")
+
     }
 }

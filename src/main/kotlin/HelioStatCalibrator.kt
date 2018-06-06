@@ -63,7 +63,7 @@ class HelioStatCalibrator(var calibrationData: CalibrationData) {
             )
             val modelledPlane = Geometry.cartesianToSpherical(plane.getValue())
             val observedPlane = Geometry.cartesianToSpherical(Geometry.sphericalToCartesian(Vector3D(dataPoint.length, dataPoint.pitch, dataPoint.rotation)))
-            println("${dataPoint.control.pitch} ${dataPoint.control.rotation} ${observedPlane.y - modelledPlane.y} ${observedPlane.z - modelledPlane.z} ${observedPlane.x - modelledPlane.x}")
+            println("${dataPoint.control.pitch} ${dataPoint.control.rotation} ${observedPlane.x - modelledPlane.x} ${observedPlane.y - modelledPlane.y} ${observedPlane.z - modelledPlane.z}")
             residual.add(modelledPlane.subtract(observedPlane))
         }
         return residual
