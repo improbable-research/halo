@@ -7,56 +7,42 @@ import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
 import java.util.*
 
-class HelioStatCalibrator(var calibrationData: CalibrationData) {
+class HelioStatCalibrator(val calibrationData: CalibrationData) {
 
-    private val ransacLogLikelihoodRejectionThreshold = 0.0001
+    private val ransacLogLikelihoodRejectionThreshold = -6.0
+    private val maxAcceptableRejectionRate = 0.3
+    private val rejectionRateToInstantlyAccept = 0.1
 
-    class DataPoint( val length : Double, val pitch : Double, val rotation : Double, val control: ServoSetting) {
-        override fun toString() : String {
-            return "${control.pitch} ${control.rotation} $pitch $rotation $length"
-        }
-    }
+    fun inferHelioStatParamsRANSAC(): HelioStatParameters {
+        val bestCalibrationData = runRansacForMaxInliers()
+        val params = inferHelioStatParams(bestCalibrationData)
 
-//    constructor(data : Array<DataPoint>): this(toArrayList(data))
-//    constructor() : super()
+        val r = calculateResiduals(params, bestCalibrationData)
+        val residual = r.sumByDouble(Vector3D::getNorm) / r.size
 
-//    fun ransac(): HelioStatParameters {
-//        List<RandomSubsample>
-//    }
+        println("RANSAC calibrated HelioStatParameters with ${bestCalibrationData.size} of ${calibrationData.size} " +
+                "data points and a residual error of $residual")
 
-//    companion object {
-//        fun toArrayList(data: Array<DataPoint>): ArrayList<HelioStatCalibrator.DataPoint> {
-//            val list = ArrayList<HelioStatCalibrator.DataPoint>()
-//            list.addAll(data)
-//            return list
-//        }
-//    }
-
-    fun ransac() {
-        val subsample = calibrationData.randomSubSample(5)
-        val params = inferAllParams(subsample)
         val helio = HelioStat(params)
-
-        val inliers = ArrayList<HelioStatCalibrator.DataPoint>()
-        for (dataPoint in calibrationData) {
+        for (dataPoint in bestCalibrationData) {
             val logLikelihood = helio.getLogLikelihood(dataPoint)
-            if (logLikelihood < ransacLogLikelihoodRejectionThreshold) {
-                inliers.add(dataPoint)
-            }
+            println("$logLikelihood (${Math.exp(logLikelihood)})")
         }
+
+        return params
     }
 
-    fun inferAllParams(calibrationData: CalibrationData = this.calibrationData) : HelioStatParameters {
+    fun inferHelioStatParams(calibrationData: CalibrationData = this.calibrationData): HelioStatParameters {
         var params = inferServoParamsLinear(calibrationData)
         params = inferServoParams(params, calibrationData)
         params.pivotPoint = inferPivotPoint(calibrationData)
         return params
     }
 
-    fun calculateResiduals(params : HelioStatParameters, calibrationData: CalibrationData = this.calibrationData) : ArrayList<Vector3D> {
+    fun calculateResiduals(params: HelioStatParameters, calibrationData: CalibrationData = this.calibrationData): ArrayList<Vector3D> {
         val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
         var residual = ArrayList<Vector3D>(calibrationData.size)
-        for(dataPoint in calibrationData) {
+        for (dataPoint in calibrationData) {
             val plane = forwardModel.computeHeliostatPlane(
                     ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
                     ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
@@ -69,13 +55,12 @@ class HelioStatCalibrator(var calibrationData: CalibrationData) {
         return residual
     }
 
-    private fun inferPivotPoint(calibrationData: CalibrationData) : Vector3D {
+    private fun inferPivotPoint(calibrationData: CalibrationData): Vector3D {
         val helioStat = HelioStat(ProbabilisticHelioStatParameters())
 
-        for(dataPoint in calibrationData) {
+        for (dataPoint in calibrationData) {
             val modelledLength = helioStat.computePlaneDistanceFromOrigin(dataPoint.pitch, dataPoint.rotation)
             GaussianVertex(modelledLength, 0.001).observe(dataPoint.length)
-//            println("Err ${modelledLength.value - dataPoint.length}")
         }
         val model = BayesNet(helioStat.params.pivotPoint.x.connectedGraph)
         val optimiser = GradientOptimizer(model)
@@ -83,10 +68,10 @@ class HelioStatCalibrator(var calibrationData: CalibrationData) {
                 NonLinearConjugateGradientOptimizer(
                         NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
                         SimpleValueChecker(1e-15, 1e-15)))
-        return(helioStat.params.pivotPoint.getValue())
+        return (helioStat.params.pivotPoint.getValue())
     }
 
-    private fun inferServoParams(initialGuess : HelioStatParameters, calibrationData: CalibrationData) : HelioStatParameters {
+    private fun inferServoParams(initialGuess: HelioStatParameters, calibrationData: CalibrationData): HelioStatParameters {
         val params = ProbabilisticHelioStatParameters()
         val helioStat = HelioStat(params)
 
@@ -120,14 +105,14 @@ class HelioStatCalibrator(var calibrationData: CalibrationData) {
         return helioStat.params.getValue()
     }
 
-    private fun inferServoParamsLinear(calibrationData: CalibrationData) : HelioStatParameters {
+    private fun inferServoParamsLinear(calibrationData: CalibrationData): HelioStatParameters {
         val params = ProbabilisticHelioStatParameters()
         params.fixAxisParametersToSpherical()
         val helioStat = HelioStat(params)
 
         for (dataPoint in calibrationData) {
             val sphericalNorm = helioStat.linearSphericalNormalModel(dataPoint.control)
-            GaussianVertex(sphericalNorm.y,0.001).observe(dataPoint.pitch)
+            GaussianVertex(sphericalNorm.y, 0.001).observe(dataPoint.pitch)
             GaussianVertex(sphericalNorm.z, 0.001).observe(dataPoint.rotation)
         }
 
@@ -146,5 +131,42 @@ class HelioStatCalibrator(var calibrationData: CalibrationData) {
                         SimpleValueChecker(1e-16, 1e-16)))
 
         return helioStat.params.getValue()
+    }
+
+    private fun runRansacForMaxInliers(): CalibrationData {
+        val acceptedParams = mutableMapOf<HelioStatParameters, ArrayList<CalibrationData.DataPoint>>()
+        var bestCalibrationData = CalibrationData()
+
+        while (acceptedParams.size < 10) {
+            val inliersByParams = ransacIteration()
+            val params = inliersByParams.first
+            val inliers = inliersByParams.second
+            val rejectionRate = inliers.size / calibrationData.size.toDouble()
+            if (rejectionRate <= rejectionRateToInstantlyAccept) {
+                bestCalibrationData.addAll(inliers)
+            } else if (rejectionRate <= maxAcceptableRejectionRate) {
+                acceptedParams.put(params, inliers)
+            }
+        }
+
+        val bestInliers = acceptedParams.maxBy { (params, inliers) -> inliers.size / calibrationData.size.toDouble() }!!.value
+        bestCalibrationData.addAll(bestInliers)
+        return bestCalibrationData
+    }
+
+    private fun ransacIteration(): Pair<HelioStatParameters, ArrayList<CalibrationData.DataPoint>> {
+        val subsample = calibrationData.randomSubSample(5)
+        val params = inferHelioStatParams(subsample)
+        val helio = HelioStat(params)
+
+        val inliers = ArrayList<CalibrationData.DataPoint>()
+        for (dataPoint in calibrationData) {
+            val logLikelihood = helio.getLogLikelihood(dataPoint)
+            if (logLikelihood > ransacLogLikelihoodRejectionThreshold) {
+                inliers.add(dataPoint)
+            }
+        }
+
+        return Pair(params, inliers)
     }
 }

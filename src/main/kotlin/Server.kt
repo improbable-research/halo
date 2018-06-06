@@ -53,7 +53,7 @@ class Server {
                 ctx.status(201)
 
                 var calib = HelioStatCalibrator(calibrationData)
-                var params = calib.inferAllParams()
+                var params = calib.inferHelioStatParams()
 
                 // todo Get one with no dodgy data points and see the residual. Multiply by 5 and set that as a threshold.
                 var avResidual = calib.calculateResiduals(params).sumByDouble(Vector3D::getNorm) / calib.calibrationData.size
