@@ -9,6 +9,7 @@ import java.util.*
 
 class HelioStatCalibrator(val calibrationData: CalibrationData) {
 
+    private val ransacSampleSize = 5
     private val ransacLogLikelihoodRejectionThreshold = -6.0
     private val maxAcceptableRejectionRate = 0.3
     private val rejectionRateToInstantlyAccept = 0.1
@@ -142,6 +143,7 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
             val params = inliersByParams.first
             val inliers = inliersByParams.second
             val rejectionRate = inliers.size / calibrationData.size.toDouble()
+            println("Rejection rate of $rejectionRate")
             if (rejectionRate <= rejectionRateToInstantlyAccept) {
                 bestCalibrationData.addAll(inliers)
             } else if (rejectionRate <= maxAcceptableRejectionRate) {
@@ -155,7 +157,7 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
     }
 
     private fun ransacIteration(): Pair<HelioStatParameters, ArrayList<CalibrationData.DataPoint>> {
-        val subsample = calibrationData.randomSubSample(5)
+        val subsample = calibrationData.randomSubSample(ransacSampleSize)
         val params = inferHelioStatParams(subsample)
         val helio = HelioStat(params)
 
@@ -163,7 +165,10 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
         for (dataPoint in calibrationData) {
             val logLikelihood = helio.getLogLikelihood(dataPoint)
             if (logLikelihood > ransacLogLikelihoodRejectionThreshold) {
+//                println("Inlier with logLikelihood of $logLikelihood added")
                 inliers.add(dataPoint)
+//            } else {
+//                println("Inlier with logLikelihood of $logLikelihood rejected")
             }
         }
 
