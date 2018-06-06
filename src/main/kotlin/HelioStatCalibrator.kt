@@ -148,7 +148,7 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
         val acceptedParams = mutableMapOf<HelioStatParameters, ArrayList<CalibrationData.DataPoint>>()
         var bestCalibrationData = CalibrationData()
 
-        while (acceptedParams.size < 5) {
+        while (acceptedParams.size < ransacSampleSize) {
             val inliersByParams = ransacIteration()
             val params = inliersByParams.first
             val inliers = inliersByParams.second
