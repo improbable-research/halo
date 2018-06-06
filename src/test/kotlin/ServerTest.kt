@@ -165,7 +165,7 @@ class ServerTest {
         val calibrationDataJson = Json.toJson(calibrationData)
         val response = Http.post("http://localhost:8080/calibrate", calibrationDataJson)
 
-        val calibrator = HelioStatCalibration(calibrationData)
+        val calibrator = HelioStatCalibrator(calibrationData)
 
         val bestParams: HelioStatParameters = Json.fromJson(response, HelioStatParameters::class.java)
 

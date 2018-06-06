@@ -5,7 +5,7 @@ import java.io.FileReader
 import java.util.*
 import kotlin.math.PI
 
-class CalibrationData : ArrayList<HelioStatCalibration.DataPoint>() {
+class CalibrationData : ArrayList<HelioStatCalibrator.DataPoint>() {
 
     val rand = Random()
 
@@ -19,7 +19,7 @@ class CalibrationData : ArrayList<HelioStatCalibration.DataPoint>() {
             val length = abcd[3]
             val cartesianPlane = Vector3D(abcd[0], abcd[1], abcd[2]).normalize()
             val sphericalPlane = Geometry.cartesianToSpherical(cartesianPlane)
-            add(HelioStatCalibration.DataPoint(length,
+            add(HelioStatCalibrator.DataPoint(length,
                     sphericalPlane.y,
                     sphericalPlane.z,
                     ServoSetting(entry.value.servoPositions["209"] ?: 0,
@@ -46,7 +46,7 @@ class CalibrationData : ArrayList<HelioStatCalibration.DataPoint>() {
                 sphericalPlane = Geometry.erectToFlacid(sphericalPlane)
             }
             if (sphericalPlane.z < -Math.PI / 2) sphericalPlane = Vector3D(sphericalPlane.x, sphericalPlane.y, sphericalPlane.z + 2.0 * Math.PI)
-            add(HelioStatCalibration.DataPoint(length,
+            add(HelioStatCalibrator.DataPoint(length,
                     sphericalPlane.y,
                     sphericalPlane.z,
                     ServoSetting(entry.A1, entry.A2)))
@@ -56,7 +56,7 @@ class CalibrationData : ArrayList<HelioStatCalibration.DataPoint>() {
     fun randomSubSample(nSamples: Int): CalibrationData {
         var n = nSamples
         var i = 0
-        val subset = ArrayList<HelioStatCalibration.DataPoint>()
+        val subset = ArrayList<HelioStatCalibrator.DataPoint>()
         while (n-- > 0 && size > 0) {
             i = rand.nextInt(this.size)
             subset.add(this.removeAt(i))
@@ -89,7 +89,7 @@ class CalibrationData : ArrayList<HelioStatCalibration.DataPoint>() {
 
 //            println("Err is ${Geometry.cartesianToSpherical(normal).subtract(Vector3D(1.0, pitch, rotation))}")
 
-            this.add(HelioStatCalibration.DataPoint(planeDist.value, pitch, rotation, control))
+            this.add(HelioStatCalibrator.DataPoint(planeDist.value, pitch, rotation, control))
         }
     }
 

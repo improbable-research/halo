@@ -52,7 +52,7 @@ class Server {
                 val calibrationData = Json.fromJson(ctx.body(), CalibrationData::class.java)
                 ctx.status(201)
 
-                var calib = HelioStatCalibration(calibrationData)
+                var calib = HelioStatCalibrator(calibrationData)
                 var params = calib.inferAllParams()
 
                 // todo Get one with no dodgy data points and see the residual. Multiply by 5 and set that as a threshold.

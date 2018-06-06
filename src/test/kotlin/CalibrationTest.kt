@@ -5,18 +5,26 @@ public class CalibrationTest {
     @Test
     fun testCalibrationFromFile() {
 
-        val dataReader = CalibrationData()
-        dataReader.readFromFileFormat2("heliostatData.json")
-//        dataReader.randomSubSample(20)
+        val calibrationData = CalibrationData()
+        calibrationData.readFromFileFormat2("heliostatData.json")
+//        calibrationData.randomSubSample(20)
 
-        val calibrator = HelioStatCalibration(dataReader)
-
+        val calibrator = HelioStatCalibrator(calibrationData)
 
         val bestParams = calibrator.inferAllParams()
         println("Modelled params are: $bestParams")
         val r = calibrator.calculateResiduals(bestParams)
         val residual = r.sumByDouble(Vector3D::getNorm) / r.size
         println("average residual is $residual")
+
+        println()
+        println("Individual data point log likelihoods:")
+        val helio = HelioStat(bestParams)
+        for (dataPoint in calibrationData) {
+            val logLikelihood = helio.getLogLikelihood(dataPoint)
+            println("$logLikelihood (${Math.exp(logLikelihood)})")
+        }
+
 
         // TODO should be small and uncorrelated - if there's a shape, then stick it in the model and regress to that.
 //        for (i in 0 until calibrator.size) {
@@ -41,7 +49,7 @@ public class CalibrationTest {
 
         val dataReader = CalibrationData()
         dataReader.createSyntheticTrainingSet(30, testParams)
-        val calibrator = HelioStatCalibration(dataReader)
+        val calibrator = HelioStatCalibrator(dataReader)
 
         val bestParams = calibrator.inferAllParams()
         println("Modelled params are: $bestParams")

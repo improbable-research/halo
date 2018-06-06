@@ -7,7 +7,9 @@ import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
 import java.util.*
 
-class HelioStatCalibration(var calibrationData: CalibrationData) {
+class HelioStatCalibrator(var calibrationData: CalibrationData) {
+
+    private val ransacLogLikelihoodRejectionThreshold = 0.0001
 
     class DataPoint( val length : Double, val pitch : Double, val rotation : Double, val control: ServoSetting) {
         override fun toString() : String {
@@ -23,8 +25,8 @@ class HelioStatCalibration(var calibrationData: CalibrationData) {
 //    }
 
 //    companion object {
-//        fun toArrayList(data: Array<DataPoint>): ArrayList<HelioStatCalibration.DataPoint> {
-//            val list = ArrayList<HelioStatCalibration.DataPoint>()
+//        fun toArrayList(data: Array<DataPoint>): ArrayList<HelioStatCalibrator.DataPoint> {
+//            val list = ArrayList<HelioStatCalibrator.DataPoint>()
 //            list.addAll(data)
 //            return list
 //        }
@@ -32,7 +34,16 @@ class HelioStatCalibration(var calibrationData: CalibrationData) {
 
     fun ransac() {
         val subsample = calibrationData.randomSubSample(5)
-        val params = inferAllParams(calibrationData)
+        val params = inferAllParams(subsample)
+        val helio = HelioStat(params)
+
+        val inliers = ArrayList<HelioStatCalibrator.DataPoint>()
+        for (dataPoint in calibrationData) {
+            val logLikelihood = helio.getLogLikelihood(dataPoint)
+            if (logLikelihood < ransacLogLikelihoodRejectionThreshold) {
+                inliers.add(dataPoint)
+            }
+        }
     }
 
     fun inferAllParams(calibrationData: CalibrationData = this.calibrationData) : HelioStatParameters {
@@ -42,7 +53,7 @@ class HelioStatCalibration(var calibrationData: CalibrationData) {
         return params
     }
 
-    fun calculateResiduals(params : HelioStatParameters, calibrationData: CalibrationData) : ArrayList<Vector3D> {
+    fun calculateResiduals(params : HelioStatParameters, calibrationData: CalibrationData = this.calibrationData) : ArrayList<Vector3D> {
         val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
         var residual = ArrayList<Vector3D>(calibrationData.size)
         for(dataPoint in calibrationData) {

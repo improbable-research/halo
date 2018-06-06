@@ -13,7 +13,7 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
 
     constructor(params: HelioStatParameters) : this(ProbabilisticHelioStatParameters(params)) {}
 
-    fun getLogLikelihood(dataPoint : HelioStatCalibration.DataPoint) : Double {
+    fun getLogLikelihood(dataPoint : HelioStatCalibrator.DataPoint) : Double {
         val normSigma2 = 0.05*0.05
         val lengthSigma2 = 0.05*0.05
         val normal = computeHeliostatNormal(dataPoint.control).getValue()
