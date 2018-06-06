@@ -163,7 +163,7 @@ class ServerTest {
         calibrationData.createSyntheticTrainingSet(40, testParams)
 
         val calibrationDataJson = Json.toJson(calibrationData)
-        val response = Http.post("http://localhost:8080/calibrate", calibrationDataJson)
+        val response = Http.post("http://localhost:8080/calibrateInternalDataFormat", calibrationDataJson)
 
         val calibrator = HelioStatCalibrator(calibrationData)
 

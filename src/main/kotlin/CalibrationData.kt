@@ -53,6 +53,18 @@ class CalibrationData : ArrayList<CalibrationData.DataPoint>() {
         }
     }
 
+    fun parseCalibrationRawData2(rawData: CalibrationRawData2) {
+        val calibrationDataPoints = rawData.captures.map { rd ->
+            val length = rd.ABCD[3]
+            val sphericalNorm = Geometry.cartesianToSpherical(Vector3D(rd.ABCD[0], rd.ABCD[1], rd.ABCD[2]))
+            val pitch = sphericalNorm.y
+            val rotation = sphericalNorm.z
+            CalibrationData.DataPoint(length, pitch, rotation, ServoSetting(rd.A1, rd.A2))
+        }
+
+        this.addAll(calibrationDataPoints)
+    }
+
     fun randomSubSample(nSamples: Int): CalibrationData {
         var n = nSamples
         var i = 0
@@ -105,6 +117,23 @@ class CalibrationData : ArrayList<CalibrationData.DataPoint>() {
     class DataPoint( val length : Double, val pitch : Double, val rotation : Double, val control: ServoSetting) {
         override fun toString() : String {
             return "${control.pitch} ${control.rotation} $pitch $rotation $length"
+        }
+    }
+
+    companion object {
+
+        fun fromCalibrationRawData2(rawData: CalibrationRawData2): CalibrationData {
+            val calibrationDataPoints = rawData.captures.map { rd ->
+                val length = rd.ABCD[3]
+                val sphericalNorm = Geometry.cartesianToSpherical(Vector3D(rd.ABCD[0], rd.ABCD[1], rd.ABCD[2]))
+                val pitch = sphericalNorm.y
+                val rotation = sphericalNorm.z
+                CalibrationData.DataPoint(length, pitch, rotation, ServoSetting(rd.A1, rd.A2))
+            }
+
+            val calibrationData = CalibrationData()
+            calibrationData.addAll(calibrationDataPoints)
+            return calibrationData
         }
     }
 }
