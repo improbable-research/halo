@@ -7,7 +7,7 @@ class PointToPointTest {
     fun testPointToPointCalculation() {
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1, 0.01 + Math.PI / 2.0, -Math.PI/2 + 0.01),
+                HelioStatParameters.ServoParameters(0.001, 0.1, 0.01 + Math.PI / 2.0),
                 HelioStatParameters.ServoParameters(0.002, 0.2, -Math.PI-0.03, -Math.PI)
         )
 
