@@ -41,6 +41,7 @@ public class CalibrationTest {
 
         val bestParams = calibrator.inferHelioStatParamsRANSAC()
         println("Modelled params are: $bestParams")
+        println(Json.toJson(bestParams))
         val r = calibrator.calculateResiduals(bestParams)
         val residual = r.sumByDouble(Vector3D::getNorm) / r.size
         println("average residual is $residual")
