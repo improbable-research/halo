@@ -66,14 +66,31 @@ class HelioStatNavigator {
                 NonLinearConjugateGradientOptimizer(NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
                         SimpleValueChecker(convergenceThreshold, convergenceThreshold)))
 
+        println("opitimised target distance is ${targetDistance.value}")
+
         return ServoSetting(servoRotationRange.value.roundToInt(), servoPitchRange.value.roundToInt())
     }
 
     fun computeServoSettingFromDirection(incomingSunDirection: Vector3D,
                                          desiredTargetPoint: Vector3D, currentSetting : ServoSetting): ServoSetting {
-        targetDistance.value = 5.0
-        servoPitchRange.value = currentSetting.pitch.toDouble()
-        servoRotationRange.value = currentSetting.rotation.toDouble()
+//        targetDistance.value = 5.0
+//        servoPitchRange.value = currentSetting.pitch.toDouble()
+//        servoRotationRange.value = currentSetting.rotation.toDouble()
+
+        // linear approximation for first guess
+
+        val inRay = incomingSunDirection.normalize()
+        val outRay = (desiredTargetPoint.subtract(model.params.pivotPoint.getValue())).normalize()
+        val norm = outRay.subtract(inRay).normalize()
+
+        val firstGuess = normalToServoSignal(norm)
+
+        servoPitchRange.value = firstGuess.pitch.toDouble()
+        servoRotationRange.value = firstGuess.rotation.toDouble()
+        targetDistance.value = desiredTargetPoint.subtract(model.params.pivotPoint.getValue()).dotProduct(outRay)/incomingSunDirection.norm
+
+ //       println("first guess is ${firstGuess.pitch} ${firstGuess.rotation} ${targetDistance.value}")
+
         val probabilisticTargetPoint = model.computeTargetFromSourceDirection(servoPitchRange, servoRotationRange,
                                                                               ProbabilisticVector3D(incomingSunDirection), targetDistance)
         return computeServoSetting(probabilisticTargetPoint, desiredTargetPoint)
@@ -91,10 +108,12 @@ class HelioStatNavigator {
 
         val firstGuess = normalToServoSignal(norm)
 
-        println("first guess is ${firstGuess.pitch} ${firstGuess.rotation} ")
 
         servoPitchRange.value = firstGuess.pitch.toDouble()
         servoRotationRange.value = firstGuess.rotation.toDouble()
+        targetDistance.value = desiredTargetPoint.subtract(model.params.pivotPoint.getValue()).dotProduct(outRay)/(model.params.pivotPoint.getValue().subtract(sourcePoint)).norm
+
+//        println("first guess is ${firstGuess.pitch} ${firstGuess.rotation} ${targetDistance.value}")
 
         val probabilisticTargetPoint = model.computeTargetFromSourcePoint(servoPitchRange, servoRotationRange,
                                                                           sourcePoint, targetDistance)
