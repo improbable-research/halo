@@ -41,10 +41,11 @@ class CalibrationData : ArrayList<CalibrationData.DataPoint>() {
                 cartesianPlane = cartesianPlane.scalarMultiply(-1.0)
                 length *= -1.0
             }
-            var sphericalPlane = Geometry.cartesianToSpherical(cartesianPlane)
-//            if (entry.A2 > 2100) {
-//                sphericalPlane = Geometry.erectToFlacid(sphericalPlane)
-//            }
+            var sphericalPlane = Geometry.standardCartesianToSpherical(cartesianPlane)
+
+            if (entry.A2 > 2100) {
+                sphericalPlane = Geometry.erectToFlacid(sphericalPlane)
+            }
             if (sphericalPlane.z < -Math.PI / 2) sphericalPlane = Vector3D(sphericalPlane.x, sphericalPlane.y, sphericalPlane.z + 2.0 * Math.PI)
             add(CalibrationData.DataPoint(length,
                     sphericalPlane.y,

@@ -10,6 +10,10 @@ object Geometry {
         return standardSpherical
     }
 
+    fun standardCartesianToSpherical(xyz : Vector3D) : Vector3D {
+        return Vector3D(xyz.norm, Math.acos(xyz.y/xyz.norm), Math.atan2(xyz.z,xyz.x))
+    }
+
     fun erectToFlacid(spherical : Vector3D) : Vector3D {
         val rotationPerturbation : Double = if(spherical.z > 0.0) {
             -Math.PI
