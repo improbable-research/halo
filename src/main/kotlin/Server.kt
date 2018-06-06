@@ -68,6 +68,26 @@ class Server {
                 ctx.html(paramsJson)
             }
 
+            post("/ransacCalibrate") { ctx ->
+                //                val calibrationData = Json.fromJson(ctx.body(), CalibrationData::class.java)
+                val rawData = Json.fromJson(ctx.body(), CalibrationRawData2::class.java)
+                ctx.status(201)
+
+                val calibrationData = CalibrationData.fromCalibrationRawData2(rawData)
+
+                var calib = HelioStatCalibrator(calibrationData)
+                var params = calib.inferHelioStatParamsRANSAC()
+
+                // todo Get one with no dodgy data points and see the residual. Multiply by 5 and set that as a threshold.
+                var avResidual = calib.calculateResiduals(params).sumByDouble(Vector3D::getNorm) / calib.calibrationData.size
+
+                val paramsJson = Json.toJson(params)
+
+                // Pretend this is html to get around the in-built Jackson json serialization in Javalin, which doesn't
+                // seem to handle complex objects well.
+                ctx.html(paramsJson)
+            }
+
             post("/calibrateInternalDataFormat") { ctx ->
                 val calibrationData = Json.fromJson(ctx.body(), CalibrationData::class.java)
                 ctx.status(201)

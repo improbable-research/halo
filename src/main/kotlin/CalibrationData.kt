@@ -54,18 +54,6 @@ class CalibrationData : ArrayList<CalibrationData.DataPoint>() {
         }
     }
 
-    fun parseCalibrationRawData2(rawData: CalibrationRawData2) {
-        val calibrationDataPoints = rawData.captures.map { rd ->
-            val length = rd.ABCD[3]
-            val sphericalNorm = Geometry.cartesianToSpherical(Vector3D(rd.ABCD[0], rd.ABCD[1], rd.ABCD[2]))
-            val pitch = sphericalNorm.y
-            val rotation = sphericalNorm.z
-            CalibrationData.DataPoint(length, pitch, rotation, ServoSetting(rd.A1, rd.A2))
-        }
-
-        this.addAll(calibrationDataPoints)
-    }
-
     fun randomSubSample(nSamples: Int): CalibrationData {
         var n = nSamples
         var i = 0
@@ -126,7 +114,14 @@ class CalibrationData : ArrayList<CalibrationData.DataPoint>() {
         fun fromCalibrationRawData2(rawData: CalibrationRawData2): CalibrationData {
             val calibrationDataPoints = rawData.captures.map { rd ->
                 val length = rd.ABCD[3]
-                val sphericalNorm = Geometry.cartesianToSpherical(Vector3D(rd.ABCD[0], rd.ABCD[1], rd.ABCD[2]))
+                val cartesianNorm = Vector3D(rd.ABCD[0], rd.ABCD[1], rd.ABCD[2])
+
+                var sphericalNorm = Geometry.standardCartesianToSpherical(cartesianNorm)
+                if (rd.A2 > 2100) {
+                    sphericalNorm = Geometry.erectToFlacid(sphericalNorm)
+                }
+
+                if (sphericalNorm.z < -Math.PI / 2) sphericalNorm = Vector3D(sphericalNorm.x, sphericalNorm.y, sphericalNorm.z + 2.0 * Math.PI)
                 val pitch = sphericalNorm.y
                 val rotation = sphericalNorm.z
                 CalibrationData.DataPoint(length, pitch, rotation, ServoSetting(rd.A1, rd.A2))
