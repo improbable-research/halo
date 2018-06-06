@@ -44,7 +44,7 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
         val cartesianPitchAxis = pitchAxis.sphericalToCartesian()
         val rotationAxis = ProbabilisticVector3D(ConstantDoubleVertex(1.0), params.rotationParameters.axisPitch, params.rotationParameters.axisRotation)
         val cartesianRotationAxis = rotationAxis.sphericalToCartesian()
-        var result = cartesianRotationAxis * (-1.0)
+        var result = ProbabilisticVector3D(ConstantDoubleVertex(0.0), -1.0*cartesianPitchAxis.z, cartesianPitchAxis.y) // 90 degrees to pitch axis in the yz plane
         result = rotateVectorAroundAxisByTheta(result, cartesianPitchAxis, servoPitch)
         result = rotateVectorAroundAxisByTheta(result, cartesianRotationAxis, servoRotation)
         return result

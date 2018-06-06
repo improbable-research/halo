@@ -55,7 +55,7 @@ class ServerTest {
     private fun setMirrorNormal() {
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1, -0.02 + Math.PI / 2.0, 0.03 - Math.PI/2.0),
+                HelioStatParameters.ServoParameters(0.001, 0.1, -0.02 + Math.PI / 2.0, -Math.PI/2.0),
                 HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI - 0.02, 0.0)
         )
 
@@ -79,7 +79,7 @@ class ServerTest {
     private fun navigate() {
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1, 0.015 + Math.PI / 2.0, -Math.PI / 2 + 0.01),
+                HelioStatParameters.ServoParameters(0.001, 0.1, 0.015 + Math.PI / 2.0, -Math.PI / 2),
                 HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI - 0.03, Math.PI * 0.7)
         )
 
@@ -113,7 +113,7 @@ class ServerTest {
     private fun navigatePointToPoint() {
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1, 0.01 + Math.PI / 2.0, -Math.PI / 2 + 0.01),
+                HelioStatParameters.ServoParameters(0.001, 0.1, 0.01 + Math.PI / 2.0, -Math.PI / 2),
                 HelioStatParameters.ServoParameters(0.002, 0.2, -Math.PI - 0.03, -Math.PI)
         )
 
