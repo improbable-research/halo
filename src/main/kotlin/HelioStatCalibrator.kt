@@ -2,6 +2,7 @@ import io.improbable.keanu.algorithms.variational.GradientOptimizer
 import io.improbable.keanu.network.BayesNet
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import io.improbable.keanu.vertices.dbl.probabilistic.GaussianVertex
+import org.apache.commons.math3.exception.TooManyEvaluationsException
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
@@ -72,7 +73,7 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
         return (helioStat.params.pivotPoint.getValue())
     }
 
-    private fun inferServoParams(initialGuess: HelioStatParameters, calibrationData: CalibrationData): HelioStatParameters {
+    private fun inferServoParams(initialGuess: HelioStatParameters, calibrationData: CalibrationData, attemptNumber: Int = 1): HelioStatParameters {
         val params = ProbabilisticHelioStatParameters()
         val helioStat = HelioStat(params)
 
@@ -97,13 +98,22 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
                         )
                 )
         )
-        val poptimiser = GradientOptimizer(pmodel)
-        poptimiser.maxAPosteriori(10000,
-                NonLinearConjugateGradientOptimizer(
-                        NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-13, 1e-13)))
 
-        return helioStat.params.getValue()
+        val poptimiser = GradientOptimizer(pmodel)
+
+        try {
+            poptimiser.maxAPosteriori(10000,
+                    NonLinearConjugateGradientOptimizer(
+                            NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
+                            SimpleValueChecker(1e-13, 1e-13)))
+
+            return helioStat.params.getValue()
+        } catch (ex: TooManyEvaluationsException) {
+            println("Warning: encountered TooManyEvaluationsException in HelioStatCalibrator.inferServoParams " +
+                    "on attempt $attemptNumber. Retrying.")
+
+            return inferServoParams(initialGuess, calibrationData, attemptNumber + 1)
+        }
     }
 
     private fun inferServoParamsLinear(calibrationData: CalibrationData): HelioStatParameters {
