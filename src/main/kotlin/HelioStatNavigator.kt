@@ -9,6 +9,8 @@ import kotlin.math.roundToInt
 
 class HelioStatNavigator {
 
+    private val convergenceThreshold = 1e-8
+
     class NavigationQuery (var params: HelioStatParameters, var presentControl: ServoSetting,
                            var targetPoint: Vector3D, var source: Vector3D) {}
 
@@ -44,7 +46,7 @@ class HelioStatNavigator {
         val optimiser = GradientOptimizer(net)
         optimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-15, 1e-15)))
+                        SimpleValueChecker(convergenceThreshold, convergenceThreshold)))
 
         return ServoSetting(servoRotationRange.value.roundToInt(), servoPitchRange.value.roundToInt())
     }
@@ -60,7 +62,7 @@ class HelioStatNavigator {
         val optimiser = GradientOptimizer(net)
         optimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-15, 1e-15)))
+                        SimpleValueChecker(convergenceThreshold, convergenceThreshold)))
 
         return ServoSetting(servoRotationRange.value.roundToInt(), servoPitchRange.value.roundToInt())
     }
