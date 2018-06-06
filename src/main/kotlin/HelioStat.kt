@@ -1,6 +1,4 @@
-import io.improbable.keanu.kotlin.cos
-import io.improbable.keanu.kotlin.minus
-import io.improbable.keanu.kotlin.sin
+import io.improbable.keanu.kotlin.*
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
@@ -44,7 +42,7 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
         val cartesianPitchAxis = pitchAxis.sphericalToCartesian()
         val rotationAxis = ProbabilisticVector3D(ConstantDoubleVertex(1.0), params.rotationParameters.axisPitch, params.rotationParameters.axisRotation)
         val cartesianRotationAxis = rotationAxis.sphericalToCartesian()
-        var result = ProbabilisticVector3D(ConstantDoubleVertex(0.0), -1.0*cartesianPitchAxis.z, cartesianPitchAxis.y) // 90 degrees to pitch axis in the yz plane
+        var result = ProbabilisticVector3D(ConstantDoubleVertex(0.0), -1.0 * cartesianPitchAxis.z, cartesianPitchAxis.y) // 90 degrees to pitch axis in the yz plane
         result = rotateVectorAroundAxisByTheta(result, cartesianPitchAxis, servoPitch)
         result = rotateVectorAroundAxisByTheta(result, cartesianRotationAxis, servoRotation)
         return result
