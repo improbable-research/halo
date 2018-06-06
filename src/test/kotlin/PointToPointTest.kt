@@ -1,6 +1,7 @@
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.junit.Test
+import java.lang.Math.abs
 
 class PointToPointTest {
     @Test
@@ -34,4 +35,38 @@ class PointToPointTest {
         assert(servoSetting.pitch == pitch)
         assert(servoSetting.rotation == rotation)
     }
+
+    @Test
+    fun testPointToPointRealParams() {
+        val testParams = HelioStatParameters(
+                Vector3D(6.667, -0.695, 0.021),
+                HelioStatParameters.ServoParameters(-0.0015, 3.146, 1.566),
+                HelioStatParameters.ServoParameters(-0.0015, 4.707, 3.151, 0.012)
+        )
+
+        val navigator = HelioStatNavigator(testParams)
+        val model = HelioStat(testParams)
+        val pitch = 1017
+        val rotation = 1022
+
+
+        val sourcePoint = Vector3D(5.0, 0.0, 0.0)
+        val distance = 0.6
+        val correctServoSetting = ServoSetting(rotation, pitch)
+        val target = model.computeTargetFromSourcePoint(
+                ConstantDoubleVertex(correctServoSetting.pitch.toDouble()),
+                ConstantDoubleVertex(correctServoSetting.rotation.toDouble()),
+                sourcePoint,
+                ConstantDoubleVertex(distance)
+        ).getValue()
+        println("TargetPoint is $target")
+
+        val servoSetting = navigator.computeServoSettingFromPoint(sourcePoint, target,
+                ServoSetting(rotation + 400, pitch + 400)
+        )
+        println("Servo setting pitch/rotation is ${servoSetting.pitch} ${servoSetting.rotation}")
+        assert(abs(servoSetting.pitch - pitch) < 2)
+        assert(abs(servoSetting.rotation - rotation) < 2)
+    }
+
 }
