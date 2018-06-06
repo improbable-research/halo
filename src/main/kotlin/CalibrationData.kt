@@ -5,7 +5,7 @@ import java.io.FileReader
 import java.util.*
 import kotlin.math.PI
 
-class CalibrationData : ArrayList<HelioStatCalibrator.DataPoint>() {
+class CalibrationData : ArrayList<CalibrationData.DataPoint>() {
 
     val rand = Random()
 
@@ -19,7 +19,7 @@ class CalibrationData : ArrayList<HelioStatCalibrator.DataPoint>() {
             val length = abcd[3]
             val cartesianPlane = Vector3D(abcd[0], abcd[1], abcd[2]).normalize()
             val sphericalPlane = Geometry.cartesianToSpherical(cartesianPlane)
-            add(HelioStatCalibrator.DataPoint(length,
+            add(CalibrationData.DataPoint(length,
                     sphericalPlane.y,
                     sphericalPlane.z,
                     ServoSetting(entry.value.servoPositions["209"] ?: 0,
@@ -46,7 +46,7 @@ class CalibrationData : ArrayList<HelioStatCalibrator.DataPoint>() {
                 sphericalPlane = Geometry.erectToFlacid(sphericalPlane)
             }
             if (sphericalPlane.z < -Math.PI / 2) sphericalPlane = Vector3D(sphericalPlane.x, sphericalPlane.y, sphericalPlane.z + 2.0 * Math.PI)
-            add(HelioStatCalibrator.DataPoint(length,
+            add(CalibrationData.DataPoint(length,
                     sphericalPlane.y,
                     sphericalPlane.z,
                     ServoSetting(entry.A1, entry.A2)))
@@ -56,10 +56,10 @@ class CalibrationData : ArrayList<HelioStatCalibrator.DataPoint>() {
     fun randomSubSample(nSamples: Int): CalibrationData {
         var n = nSamples
         var i = 0
-        val subset = ArrayList<HelioStatCalibrator.DataPoint>()
+        val subset = ArrayList<CalibrationData.DataPoint>()
         while (n-- > 0 && size > 0) {
             i = rand.nextInt(this.size)
-            subset.add(this.removeAt(i))
+            subset.add(this[i])
         }
 
         val subSample = CalibrationData()
@@ -89,7 +89,7 @@ class CalibrationData : ArrayList<HelioStatCalibrator.DataPoint>() {
 
 //            println("Err is ${Geometry.cartesianToSpherical(normal).subtract(Vector3D(1.0, pitch, rotation))}")
 
-            this.add(HelioStatCalibrator.DataPoint(planeDist.value, pitch, rotation, control))
+            this.add(CalibrationData.DataPoint(planeDist.value, pitch, rotation, control))
         }
     }
 
@@ -100,6 +100,12 @@ class CalibrationData : ArrayList<HelioStatCalibrator.DataPoint>() {
         println(value.data.plane.ABCD.split(",").map(String::toDouble))
         println("cartesian is $cartesianPlane")
         println(sphericalPlane)
+    }
+
+    class DataPoint( val length : Double, val pitch : Double, val rotation : Double, val control: ServoSetting) {
+        override fun toString() : String {
+            return "${control.pitch} ${control.rotation} $pitch $rotation $length"
+        }
     }
 }
 

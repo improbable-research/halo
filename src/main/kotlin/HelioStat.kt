@@ -1,4 +1,6 @@
-import io.improbable.keanu.kotlin.*
+import io.improbable.keanu.kotlin.cos
+import io.improbable.keanu.kotlin.minus
+import io.improbable.keanu.kotlin.sin
 import io.improbable.keanu.vertices.dbl.DoubleVertex
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
@@ -8,19 +10,19 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 class HelioStat(var params: ProbabilisticHelioStatParameters) {
 
-//    var heliostatOffsetFromPivot = 0.144 // measured with caliper, variance sub-millimetre
+    //    var heliostatOffsetFromPivot = 0.144 // measured with caliper, variance sub-millimetre
     var heliostatOffsetFromPivot = 0.145 // measured with caliper, variance sub-millimetre
 
     constructor(params: HelioStatParameters) : this(ProbabilisticHelioStatParameters(params)) {}
 
-    fun getLogLikelihood(dataPoint : HelioStatCalibrator.DataPoint) : Double {
-        val normSigma2 = 0.05*0.05
-        val lengthSigma2 = 0.05*0.05
+    fun getLogLikelihood(dataPoint: CalibrationData.DataPoint): Double {
+        val normSigma2 = 0.05 * 0.05
+        val lengthSigma2 = 0.05 * 0.05
         val normal = computeHeliostatNormal(dataPoint.control).getValue()
         val length = computePlaneDistanceFromOrigin(dataPoint.pitch, dataPoint.rotation).value
         val observedNormal = Geometry.sphericalToCartesian(Vector3D(1.0, dataPoint.pitch, dataPoint.rotation))
-        return(-normal.subtract(observedNormal).normSq/(2.0*normSigma2) + 0.5*Math.log(2.0*Math.PI*normSigma2) -
-                Math.pow(length - dataPoint.length, 2.0)/(2.0*lengthSigma2) + 0.5*Math.log(2.0*Math.PI*lengthSigma2))
+        return (-normal.subtract(observedNormal).normSq / (2.0 * normSigma2) + 0.5 * Math.log(2.0 * Math.PI * normSigma2) -
+                Math.pow(length - dataPoint.length, 2.0) / (2.0 * lengthSigma2) + 0.5 * Math.log(2.0 * Math.PI * lengthSigma2))
     }
 
     fun computeHeliostatNormal(control: ServoSetting): ProbabilisticVector3D {
@@ -42,7 +44,7 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
         val cartesianPitchAxis = pitchAxis.sphericalToCartesian()
         val rotationAxis = ProbabilisticVector3D(ConstantDoubleVertex(1.0), params.rotationParameters.axisPitch, params.rotationParameters.axisRotation)
         val cartesianRotationAxis = rotationAxis.sphericalToCartesian()
-        var result = cartesianRotationAxis*(-1.0)
+        var result = cartesianRotationAxis * (-1.0)
         result = rotateVectorAroundAxisByTheta(result, cartesianPitchAxis, servoPitch)
         result = rotateVectorAroundAxisByTheta(result, cartesianRotationAxis, servoRotation)
         return result
@@ -94,8 +96,8 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
                 vector.z * (u.x * u.z * oneMinusCosTheta + u.y * sinTheta)
 
         var resultY = vector.x * (u.y * u.x * oneMinusCosTheta + u.z * sinTheta) +
-            vector.y * (cosTheta + u.y * u.y * oneMinusCosTheta) +
-            vector.z * (u.y * u.z * oneMinusCosTheta - u.x * sinTheta)
+                vector.y * (cosTheta + u.y * u.y * oneMinusCosTheta) +
+                vector.z * (u.y * u.z * oneMinusCosTheta - u.x * sinTheta)
 
         var resultZ = vector.x * (u.z * u.x * oneMinusCosTheta - u.y * sinTheta) +
                 vector.y * (u.z * u.y * oneMinusCosTheta + u.x * sinTheta) +
@@ -118,7 +120,6 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
 //                sphericalNorm.y,
 //                sphericalNorm.z)
 //    }
-
 
 
 }

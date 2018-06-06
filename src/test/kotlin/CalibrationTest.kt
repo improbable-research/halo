@@ -11,7 +11,7 @@ public class CalibrationTest {
 
         val calibrator = HelioStatCalibrator(calibrationData)
 
-        val bestParams = calibrator.inferAllParams()
+        val bestParams = calibrator.inferHelioStatParams()
         println("Modelled params are: $bestParams")
         val r = calibrator.calculateResiduals(bestParams)
         analyzeResiduals(r)
@@ -24,6 +24,26 @@ public class CalibrationTest {
             println("$logLikelihood (${Math.exp(logLikelihood)})")
         }
 
+
+        // TODO should be small and uncorrelated - if there's a shape, then stick it in the model and regress to that.
+//        for (i in 0 until calibrator.size) {
+//            println("${calibrator[i].control.pitch} ${calibrator[i].control.rotation} ${r[i].x} ${r[i].y} ${r[i].z}")
+//        }
+    }
+
+    @Test
+    fun testRansacCalibrationFromFile() {
+
+        val calibrationData = CalibrationData()
+        calibrationData.readFromFileFormat2("heliostatData.json")
+
+        val calibrator = HelioStatCalibrator(calibrationData)
+
+        val bestParams = calibrator.inferHelioStatParamsRANSAC()
+        println("Modelled params are: $bestParams")
+        val r = calibrator.calculateResiduals(bestParams)
+        val residual = r.sumByDouble(Vector3D::getNorm) / r.size
+        println("average residual is $residual")
 
         // TODO should be small and uncorrelated - if there's a shape, then stick it in the model and regress to that.
 //        for (i in 0 until calibrator.size) {
@@ -50,7 +70,7 @@ public class CalibrationTest {
         dataReader.createSyntheticTrainingSet(30, testParams)
         val calibrator = HelioStatCalibrator(dataReader)
 
-        val bestParams = calibrator.inferAllParams()
+        val bestParams = calibrator.inferHelioStatParams()
         println("Modelled params are: $bestParams")
         val r = calibrator.calculateResiduals(bestParams)
         val residual = r.sumByDouble(Vector3D::getNorm) / r.size
