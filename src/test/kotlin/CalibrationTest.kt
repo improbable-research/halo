@@ -5,7 +5,7 @@ public class CalibrationTest {
     @Test
     fun testCalibrationFromFile() {
 
-        val dataReader = CalibrationDataReadAndConvert()
+        val dataReader = CalibrationData()
         dataReader.readFromFileFormat2("heliostatData.json")
 //        dataReader.randomSubSample(20)
 
@@ -39,7 +39,7 @@ public class CalibrationTest {
                   HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI, 0.0)
         )
 
-        val dataReader = CalibrationDataReadAndConvert()
+        val dataReader = CalibrationData()
         dataReader.createSyntheticTrainingSet(30, testParams)
         val calibrator = HelioStatCalibration(dataReader)
 

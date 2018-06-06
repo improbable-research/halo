@@ -7,7 +7,7 @@ import org.apache.commons.math3.optim.SimpleValueChecker
 import org.apache.commons.math3.optim.nonlinear.scalar.gradient.NonLinearConjugateGradientOptimizer
 import java.util.*
 
-class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
+class HelioStatCalibration(var calibrationData: CalibrationData) {
 
     class DataPoint( val length : Double, val pitch : Double, val rotation : Double, val control: ServoSetting) {
         override fun toString() : String {
@@ -15,21 +15,53 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         }
     }
 
-    constructor(array : List<DataPoint>) : super(array) {}
-    constructor(data : Array<DataPoint>) { this.addAll(data) }
-    constructor() : super()
+//    constructor(data : Array<DataPoint>): this(toArrayList(data))
+//    constructor() : super()
 
-    fun inferAllParams() : HelioStatParameters {
-        var params = inferServoParamsLinear()
-        params = inferServoParams(params)
-        params.pivotPoint = inferPivotPoint()
+//    fun ransac(): HelioStatParameters {
+//        List<RandomSubsample>
+//    }
+
+//    companion object {
+//        fun toArrayList(data: Array<DataPoint>): ArrayList<HelioStatCalibration.DataPoint> {
+//            val list = ArrayList<HelioStatCalibration.DataPoint>()
+//            list.addAll(data)
+//            return list
+//        }
+//    }
+
+    fun ransac() {
+        val subsample = calibrationData.randomSubSample(5)
+        val params = inferAllParams(calibrationData)
+    }
+
+    fun inferAllParams(calibrationData: CalibrationData = this.calibrationData) : HelioStatParameters {
+        var params = inferServoParamsLinear(calibrationData)
+        params = inferServoParams(params, calibrationData)
+        params.pivotPoint = inferPivotPoint(calibrationData)
         return params
     }
 
-    fun inferPivotPoint() : Vector3D {
+    fun calculateResiduals(params : HelioStatParameters, calibrationData: CalibrationData) : ArrayList<Vector3D> {
+        val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
+        var residual = ArrayList<Vector3D>(calibrationData.size)
+        for(dataPoint in calibrationData) {
+            val plane = forwardModel.computeHeliostatPlane(
+                    ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
+                    ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
+            )
+            val modelledPlane = Geometry.cartesianToSpherical(plane.getValue())
+            val observedPlane = Geometry.cartesianToSpherical(Geometry.sphericalToCartesian(Vector3D(dataPoint.length, dataPoint.pitch, dataPoint.rotation)))
+            println("${dataPoint.control.pitch} ${dataPoint.control.rotation} ${observedPlane.y - modelledPlane.y} ${observedPlane.z - modelledPlane.z} ${observedPlane.x - modelledPlane.x}")
+            residual.add(modelledPlane.subtract(observedPlane))
+        }
+        return residual
+    }
+
+    private fun inferPivotPoint(calibrationData: CalibrationData) : Vector3D {
         val helioStat = HelioStat(ProbabilisticHelioStatParameters())
 
-        for(dataPoint in this) {
+        for(dataPoint in calibrationData) {
             val modelledLength = helioStat.computePlaneDistanceFromOrigin(dataPoint.pitch, dataPoint.rotation)
             GaussianVertex(modelledLength, 0.001).observe(dataPoint.length)
 //            println("Err ${modelledLength.value - dataPoint.length}")
@@ -43,7 +75,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         return(helioStat.params.pivotPoint.getValue())
     }
 
-    fun inferServoParams(initialGuess : HelioStatParameters) : HelioStatParameters {
+    private fun inferServoParams(initialGuess : HelioStatParameters, calibrationData: CalibrationData) : HelioStatParameters {
         val params = ProbabilisticHelioStatParameters()
         val helioStat = HelioStat(params)
 
@@ -52,7 +84,7 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         helioStat.params.rotationParameters.m.value = initialGuess.rotationParameters.m
         helioStat.params.rotationParameters.c.value = initialGuess.rotationParameters.c
 
-        for (dataPoint in this) {
+        for (dataPoint in calibrationData) {
             val cartesianNorm = helioStat.computeHeliostatNormal(dataPoint.control)
             val observedNorm = Geometry.sphericalToCartesian(Vector3D(1.0, dataPoint.pitch, dataPoint.rotation))
             GaussianVertex(cartesianNorm.x, 0.005).observe(observedNorm.x)
@@ -77,12 +109,12 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
         return helioStat.params.getValue()
     }
 
-    fun inferServoParamsLinear() : HelioStatParameters {
+    private fun inferServoParamsLinear(calibrationData: CalibrationData) : HelioStatParameters {
         val params = ProbabilisticHelioStatParameters()
         params.fixAxisParametersToSpherical()
         val helioStat = HelioStat(params)
 
-        for (dataPoint in this) {
+        for (dataPoint in calibrationData) {
             val sphericalNorm = helioStat.linearSphericalNormalModel(dataPoint.control)
             GaussianVertex(sphericalNorm.y,0.001).observe(dataPoint.pitch)
             GaussianVertex(sphericalNorm.z, 0.001).observe(dataPoint.rotation)
@@ -103,22 +135,5 @@ class HelioStatCalibration : ArrayList<HelioStatCalibration.DataPoint> {
                         SimpleValueChecker(1e-16, 1e-16)))
 
         return helioStat.params.getValue()
-    }
-
-
-    fun calculateResiduals(params : HelioStatParameters) : ArrayList<Vector3D> {
-        val forwardModel = HelioStat(ProbabilisticHelioStatParameters(params))
-        var residual = ArrayList<Vector3D>(this.size)
-        for(dataPoint in this) {
-            val plane = forwardModel.computeHeliostatPlane(
-                    ConstantDoubleVertex(dataPoint.control.pitch.toDouble()),
-                    ConstantDoubleVertex(dataPoint.control.rotation.toDouble())
-            )
-            val modelledPlane = Geometry.cartesianToSpherical(plane.getValue())
-            val observedPlane = Geometry.cartesianToSpherical(Geometry.sphericalToCartesian(Vector3D(dataPoint.length, dataPoint.pitch, dataPoint.rotation)))
-            println("${dataPoint.control.pitch} ${dataPoint.control.rotation} ${observedPlane.y - modelledPlane.y} ${observedPlane.z - modelledPlane.z} ${observedPlane.x - modelledPlane.x}")
-            residual.add(modelledPlane.subtract(observedPlane))
-        }
-        return residual
     }
 }

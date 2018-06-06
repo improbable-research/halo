@@ -159,7 +159,7 @@ class ServerTest {
                 HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI, 0.0)
         )
 
-        val calibrationData = CalibrationDataReadAndConvert()
+        val calibrationData = CalibrationData()
         calibrationData.createSyntheticTrainingSet(40, testParams)
 
         val calibrationDataJson = Json.toJson(calibrationData)

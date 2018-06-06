@@ -49,14 +49,14 @@ class Server {
             }
 
             post("/calibrate") { ctx ->
-                val calibrationData = Json.fromJson(ctx.body(), CalibrationDataReadAndConvert::class.java)
+                val calibrationData = Json.fromJson(ctx.body(), CalibrationData::class.java)
                 ctx.status(201)
 
                 var calib = HelioStatCalibration(calibrationData)
                 var params = calib.inferAllParams()
 
                 // todo Get one with no dodgy data points and see the residual. Multiply by 5 and set that as a threshold.
-                var avResidual = calib.calculateResiduals(params).sumByDouble(Vector3D::getNorm) / calib.size
+                var avResidual = calib.calculateResiduals(params).sumByDouble(Vector3D::getNorm) / calib.calibrationData.size
 
                 val paramsJson = Json.toJson(params)
 
