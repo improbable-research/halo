@@ -3,10 +3,11 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 object Geometry {
 
     fun cartesianToSpherical(xyz : Vector3D) : Vector3D {
-//        val unitNorm = xyz.normalize()
-        return Vector3D(xyz.norm,
-                        Math.acos(xyz.y/xyz.norm),
-                        Math.atan2(xyz.z,xyz.x))
+        val standardSpherical = Vector3D(xyz.norm, Math.acos(xyz.y/xyz.norm), Math.atan2(xyz.z,xyz.x))
+        if(standardSpherical.z > 3.0*Math.PI/4.0 || standardSpherical.z < -Math.PI/4.0) {
+            return erectToFlacid(standardSpherical)
+        }
+        return standardSpherical
     }
 
     fun erectToFlacid(spherical : Vector3D) : Vector3D {

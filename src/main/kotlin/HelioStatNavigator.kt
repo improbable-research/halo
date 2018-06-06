@@ -9,7 +9,7 @@ import kotlin.math.roundToInt
 
 class HelioStatNavigator {
 
-    private val convergenceThreshold = 1e-8
+    private val convergenceThreshold = 1e-13
 
     class NavigationQuery (var params: HelioStatParameters, var presentControl: ServoSetting,
                            var targetPoint: Vector3D, var source: Vector3D) {}
@@ -73,23 +73,22 @@ class HelioStatNavigator {
 
     fun computeServoSettingFromDirection(incomingSunDirection: Vector3D,
                                          desiredTargetPoint: Vector3D, currentSetting : ServoSetting): ServoSetting {
-//        targetDistance.value = 5.0
-//        servoPitchRange.value = currentSetting.pitch.toDouble()
-//        servoRotationRange.value = currentSetting.rotation.toDouble()
-
-        // linear approximation for first guess
-
         val inRay = incomingSunDirection.normalize()
         val outRay = (desiredTargetPoint.subtract(model.params.pivotPoint.getValue())).normalize()
         val norm = outRay.subtract(inRay).normalize()
 
         val firstGuess = normalToServoSignal(norm)
-
-        servoPitchRange.value = firstGuess.pitch.toDouble()
-        servoRotationRange.value = firstGuess.rotation.toDouble()
         targetDistance.value = desiredTargetPoint.subtract(model.params.pivotPoint.getValue()).dotProduct(outRay)/incomingSunDirection.norm
 
- //       println("first guess is ${firstGuess.pitch} ${firstGuess.rotation} ${targetDistance.value}")
+        if(currentSetting.rotation < 0 || currentSetting.pitch < 0) {
+            servoPitchRange.value = firstGuess.pitch.toDouble()
+            servoRotationRange.value = firstGuess.rotation.toDouble()
+        } else {
+            servoPitchRange.value = currentSetting.pitch.toDouble()
+            servoRotationRange.value = currentSetting.rotation.toDouble()
+        }
+
+        //       println("first guess is ${firstGuess.pitch} ${firstGuess.rotation} ${targetDistance.value}")
 
         val probabilisticTargetPoint = model.computeTargetFromSourceDirection(servoPitchRange, servoRotationRange,
                                                                               ProbabilisticVector3D(incomingSunDirection), targetDistance)
@@ -97,21 +96,20 @@ class HelioStatNavigator {
     }
 
     fun computeServoSettingFromPoint(sourcePoint: Vector3D, desiredTargetPoint: Vector3D, currentSetting : ServoSetting): ServoSetting {
-//        servoPitchRange.value = currentSetting.pitch.toDouble()
-//        servoRotationRange.value = currentSetting.rotation.toDouble()
-
-        // linear approximation for first guess
-
         val inRay = (model.params.pivotPoint.getValue().subtract(sourcePoint)).normalize()
         val outRay = (desiredTargetPoint.subtract(model.params.pivotPoint.getValue())).normalize()
         val norm = outRay.subtract(inRay).normalize()
 
         val firstGuess = normalToServoSignal(norm)
-
-
-        servoPitchRange.value = firstGuess.pitch.toDouble()
-        servoRotationRange.value = firstGuess.rotation.toDouble()
         targetDistance.value = desiredTargetPoint.subtract(model.params.pivotPoint.getValue()).dotProduct(outRay)/(model.params.pivotPoint.getValue().subtract(sourcePoint)).norm
+
+        if(currentSetting.rotation < 0 || currentSetting.pitch < 0) {
+            servoPitchRange.value = firstGuess.pitch.toDouble()
+            servoRotationRange.value = firstGuess.rotation.toDouble()
+        } else {
+            servoPitchRange.value = currentSetting.pitch.toDouble()
+            servoRotationRange.value = currentSetting.rotation.toDouble()
+        }
 
 //        println("first guess is ${firstGuess.pitch} ${firstGuess.rotation} ${targetDistance.value}")
 

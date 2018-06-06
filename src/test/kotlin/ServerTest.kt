@@ -1,6 +1,7 @@
 import io.improbable.keanu.vertices.dbl.nonprobabilistic.ConstantDoubleVertex
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 import org.junit.Test
+import java.lang.Math.abs
 
 class ServerTest {
 
@@ -79,16 +80,16 @@ class ServerTest {
     private fun navigate() {
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1, 0.015 + Math.PI / 2.0, -Math.PI / 2),
-                HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI - 0.03, Math.PI * 0.7)
+                HelioStatParameters.ServoParameters(-0.0015, 3.1, 0.015 + Math.PI / 2.0, -Math.PI / 2),
+                HelioStatParameters.ServoParameters(-0.0017, 3.2, Math.PI - 0.03, Math.PI * 0.7)
         )
 
         val model = HelioStat(testParams)
-        val pitch = 1234
-        val rotation = 1345
+        val pitch = 2234
+        val rotation = 2346
 
         val sunVector = Vector3D(1.0, -0.1, 1.0).normalize()
-        val distance = 4.0
+        val distance = 5.0
         val correctServoSetting = ServoSetting(rotation, pitch)
         val target = model.computeTargetFromSourceDirection(
                 ConstantDoubleVertex(correctServoSetting.pitch.toDouble()),
@@ -106,6 +107,8 @@ class ServerTest {
 
         val servoSetting = Json.fromJson(response, ServoSetting::class.java)
         println("Servo setting pitch/rotation is ${servoSetting.pitch} ${servoSetting.rotation}")
+//        assert(abs(servoSetting.pitch - pitch) < 2)
+//        assert(abs(servoSetting.rotation - rotation) < 2)
         assert(servoSetting.pitch == pitch)
         assert(servoSetting.rotation == rotation)
     }

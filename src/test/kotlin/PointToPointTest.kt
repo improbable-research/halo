@@ -46,12 +46,12 @@ class PointToPointTest {
 
         val navigator = HelioStatNavigator(testParams)
         val model = HelioStat(testParams)
-        val pitch = 1017
-        val rotation = 1022
+        val pitch = 2118
+        val rotation = 3322
 
 
-        val sourcePoint = Vector3D(5.0, 0.0, 0.0)
-        val distance = 0.6
+        val sourcePoint = Vector3D(3.0, 0.0, 0.0)
+        val distance = 3.0
         val correctServoSetting = ServoSetting(rotation, pitch)
         val target = model.computeTargetFromSourcePoint(
                 ConstantDoubleVertex(correctServoSetting.pitch.toDouble()),
@@ -62,11 +62,13 @@ class PointToPointTest {
         println("TargetPoint is $target")
 
         val servoSetting = navigator.computeServoSettingFromPoint(sourcePoint, target,
-                ServoSetting(rotation + 400, pitch + 400)
+                ServoSetting(rotation + 0, pitch + 0)
         )
         println("Servo setting pitch/rotation is ${servoSetting.pitch} ${servoSetting.rotation}")
-        assert(abs(servoSetting.pitch - pitch) < 2)
-        assert(abs(servoSetting.rotation - rotation) < 2)
+//        assert(abs(servoSetting.pitch - pitch) < 2)
+//        assert(abs(servoSetting.rotation - rotation) < 2)
+        assert(servoSetting.pitch == pitch)
+        assert(servoSetting.rotation == rotation)
     }
 
 }

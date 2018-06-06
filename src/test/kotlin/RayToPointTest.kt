@@ -7,14 +7,14 @@ class RayToPointTest {
     fun testRayToPointCalculation() {
         val testParams = HelioStatParameters(
                 Vector3D(1.0, 1.0, 1.0),
-                HelioStatParameters.ServoParameters(0.001, 0.1, 0.015 + Math.PI / 2.0),
-                HelioStatParameters.ServoParameters(0.002, 0.2, Math.PI-0.03, Math.PI * 0.7)
+                HelioStatParameters.ServoParameters(-0.0016, 3.1477, 0.015 + Math.PI / 2.0),
+                HelioStatParameters.ServoParameters(-0.0016, 3.1477, Math.PI-0.03, Math.PI * 0.7)
         )
 
         val navigator = HelioStatNavigator(testParams)
         val model = HelioStat(testParams)
-        val pitch = 1234
-        val rotation = 1345
+        val pitch = 2234
+        val rotation = 2345
 
         val sunVector = Vector3D(1.0, -0.1, 1.0).normalize()
         val distance = 4.0

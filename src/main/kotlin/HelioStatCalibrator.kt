@@ -68,7 +68,7 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
         optimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(
                         NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-15, 1e-15)))
+                        SimpleValueChecker(1e-13, 1e-13)))
         return (helioStat.params.pivotPoint.getValue())
     }
 

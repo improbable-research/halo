@@ -87,12 +87,12 @@ class ProbabilisticVector3D (var x: DoubleVertex, var y: DoubleVertex, var z: Do
         return this * lengthSquared().pow(-0.5)
     }
 
-    fun cartesianToSpherical() : ProbabilisticVector3D {
-        val unitVector = normalize()
-        return ProbabilisticVector3D(length(),
-                acos(unitVector.y),
-                ArcTanVertex(unitVector.z/unitVector.x)
-        // TODO: arctan only works in one half of the plane, need to add atan2 vertex to deal with the whole plane
-        )
-    }
+//    fun cartesianToSpherical() : ProbabilisticVector3D {
+//        val unitVector = normalize()
+//        return ProbabilisticVector3D(length(),
+//                acos(unitVector.y),
+//                ArcTanVertex(unitVector.z/unitVector.x)
+//        // TODO: arctan only works in one half of the plane, need to add atan2 vertex to deal with the whole plane
+//        )
+//    }
 }
