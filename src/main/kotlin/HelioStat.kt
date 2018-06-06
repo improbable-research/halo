@@ -13,6 +13,16 @@ class HelioStat(var params: ProbabilisticHelioStatParameters) {
 
     constructor(params: HelioStatParameters) : this(ProbabilisticHelioStatParameters(params)) {}
 
+    fun getLogLikelihood(dataPoint : HelioStatCalibration.DataPoint) : Double {
+        val normSigma2 = 0.05*0.05
+        val lengthSigma2 = 0.05*0.05
+        val normal = computeHeliostatNormal(dataPoint.control).getValue()
+        val length = computePlaneDistanceFromOrigin(dataPoint.pitch, dataPoint.rotation).value
+        val observedNormal = Geometry.sphericalToCartesian(Vector3D(1.0, dataPoint.pitch, dataPoint.rotation))
+        return(-normal.subtract(observedNormal).normSq/(2.0*normSigma2) - 0.5*Math.log(2.0*Math.PI*normSigma2) -
+                Math.pow(length - dataPoint.length, 2.0)/(2.0*lengthSigma2) - 0.5*Math.log(2.0*Math.PI*lengthSigma2))
+    }
+
     fun computeHeliostatNormal(control: ServoSetting): ProbabilisticVector3D {
         return computeHeliostatNormal(ConstantDoubleVertex(control.pitch.toDouble()),
                 ConstantDoubleVertex(control.rotation.toDouble()))
