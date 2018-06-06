@@ -101,7 +101,7 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
         poptimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(
                         NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-16, 1e-16)))
+                        SimpleValueChecker(1e-13, 1e-13)))
 
         return helioStat.params.getValue()
     }
@@ -122,14 +122,14 @@ class HelioStatCalibrator(val calibrationData: CalibrationData) {
         poptimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(
                         NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-16, 1e-16)))
+                        SimpleValueChecker(1e-13, 1e-13)))
 
         val rmodel = BayesNet(helioStat.params.rotationParameters.m.connectedGraph)
         val roptimiser = GradientOptimizer(rmodel)
         roptimiser.maxAPosteriori(10000,
                 NonLinearConjugateGradientOptimizer(
                         NonLinearConjugateGradientOptimizer.Formula.POLAK_RIBIERE,
-                        SimpleValueChecker(1e-16, 1e-16)))
+                        SimpleValueChecker(1e-13, 1e-13)))
 
         return helioStat.params.getValue()
     }
