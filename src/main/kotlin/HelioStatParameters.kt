@@ -11,7 +11,69 @@ class HelioStatParameters(var pivotPoint: Vector3D,
         override fun toString() : String {
             return "{m: $m, c: $c, pitch: $pitch, rotation: $rotation}"
         }
+
+        companion object {
+            fun defaultParams(isOnTower : Boolean, isPitch : Boolean) : ServoParameters {
+                return if(isOnTower) {
+                    ServoParameters(-0.001534,
+                            if(isPitch) 3.146 else 4.707 - Math.PI/2.0,
+                            if(isPitch) Math.PI/2.0 else Math.PI,
+                            if(isPitch) -Math.PI/2.0 else 0.0)
+                } else {
+                    ServoParameters(-0.001534,
+                            if(isPitch) 3.146 else 4.707,
+                            if(isPitch) Math.PI/2.0 else Math.PI,
+                            if(isPitch) -Math.PI/2.0 else 0.0)
+                }
+            }
+
+            fun defaultParams(isOnTower : Boolean, isPitch : Boolean, referenceServoVal : Int) : ServoParameters {
+                return if(isOnTower) {
+                    ServoParameters(-0.001534,
+                            if(isPitch) 0.001534*referenceServoVal else 0.001534*referenceServoVal,
+                            if(isPitch) Math.PI/2.0 else Math.PI,
+                            if(isPitch) -Math.PI/2.0 else 0.0)
+                } else {
+                    ServoParameters(-0.001534,
+                            if(isPitch) 0.001534*referenceServoVal else Math.PI/2.0 + 0.001534*referenceServoVal,
+                            if(isPitch) Math.PI/2.0 else Math.PI,
+                            if(isPitch) -Math.PI/2.0 else 0.0)
+                }
+            }
+        }
     }
+
+    companion object {
+        fun defaultParams(pivotPoint : Vector3D) : HelioStatParameters {
+            return if(pivotPoint.y > 0.5) {
+                HelioStatParameters(pivotPoint,
+                        ServoParameters.defaultParams(true, true),
+                        ServoParameters.defaultParams(true, false)
+                )
+            } else {
+                HelioStatParameters(pivotPoint,
+                        ServoParameters.defaultParams(false, true),
+                        ServoParameters.defaultParams(false, false)
+                )
+            }
+        }
+
+        fun defaultParams(pivotPoint : Vector3D, referencePitchServoValue : Int, referenceRotationServoValue : Int) : HelioStatParameters {
+            return if(pivotPoint.y > 0.5) {
+                HelioStatParameters(pivotPoint,
+                        ServoParameters.defaultParams(true, true, referencePitchServoValue),
+                        ServoParameters.defaultParams(true, false, referenceRotationServoValue)
+                )
+            } else {
+                HelioStatParameters(pivotPoint,
+                        ServoParameters.defaultParams(false, true, referencePitchServoValue),
+                        ServoParameters.defaultParams(false, false, referenceRotationServoValue)
+                )
+            }
+        }
+
+    }
+
 
     override fun toString() : String {
         return "PivotPoint: $pivotPoint,  PitchParams: $pitchParameters, RotationParams:$rotationParameters"
