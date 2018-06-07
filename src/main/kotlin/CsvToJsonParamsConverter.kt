@@ -4,9 +4,10 @@ import java.io.File
 fun main(args: Array<String>) {
 
     val skipLines = 1
-    val reader = File("file.csv").inputStream().bufferedReader(Charsets.UTF_8)
-    val lines = reader.readLines()
-    lines.subList(skipLines, lines.size)
+    val reader = File("heliostatParams.csv").inputStream().bufferedReader(Charsets.UTF_8)
+    var lines = reader.readLines()
+    reader.close()
+    lines = lines.subList(skipLines, lines.size)
 
     val hamParameters = arrayListOf<HamParameters>()
     for (line in lines) {
@@ -14,7 +15,10 @@ fun main(args: Array<String>) {
         hamParameters.add(csvToHamParametersJson(lineFields))
     }
 
-    Json.toJson(hamParameters)
+    val json = Json.toJson(hamParameters)
+    val writer = File("heliostatParams.json").bufferedWriter(Charsets.UTF_8)
+    writer.write(json)
+    writer.close()
 }
 
 private fun csvToHamParametersJson(lineFields: List<String>): HamParameters {
@@ -25,11 +29,11 @@ private fun csvToHamParametersJson(lineFields: List<String>): HamParameters {
     val targetX = lineFields[4]
     val targetY = lineFields[5]
     val targetZ = lineFields[6]
-    val rotationXAxisSetting = lineFields[7]
-    val pitchYAxisSetting = lineFields[8]
+//    val rotationXAxisSetting = lineFields[7]
+//    val pitchYAxisSetting = lineFields[8]
 
     val pivotPoint = Vector3D(pivotX, pivotY, pivotZ)
-    val helioParams = HelioStatParameters(pivotPoint)
+    val helioParams = HelioStatParameters.defaultParams(pivotPoint)
     val axis1servoID = id * 2 - 1
     val axis2servoID = id * 2
     return HamParameters(id, axis1servoID, axis2servoID, helioParams)
