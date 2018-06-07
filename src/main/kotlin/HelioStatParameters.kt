@@ -26,6 +26,20 @@ class HelioStatParameters(var pivotPoint: Vector3D,
                             if(isPitch) -Math.PI/2.0 else 0.0)
                 }
             }
+
+            fun defaultParams(isOnTower : Boolean, isPitch : Boolean, referenceServoVal : Int) : ServoParameters {
+                return if(isOnTower) {
+                    ServoParameters(-0.001534,
+                            if(isPitch) 0.001534*referenceServoVal else 0.001534*referenceServoVal,
+                            if(isPitch) Math.PI/2.0 else Math.PI,
+                            if(isPitch) -Math.PI/2.0 else 0.0)
+                } else {
+                    ServoParameters(-0.001534,
+                            if(isPitch) 0.001534*referenceServoVal else Math.PI/2.0 + 0.001534*referenceServoVal,
+                            if(isPitch) Math.PI/2.0 else Math.PI,
+                            if(isPitch) -Math.PI/2.0 else 0.0)
+                }
+            }
         }
     }
 
@@ -43,6 +57,21 @@ class HelioStatParameters(var pivotPoint: Vector3D,
                 )
             }
         }
+
+        fun defaultParams(pivotPoint : Vector3D, referencePitchServoValue : Int, referenceRotationServoValue : Int) : HelioStatParameters {
+            return if(pivotPoint.y > 0.5) {
+                HelioStatParameters(pivotPoint,
+                        ServoParameters.defaultParams(true, true, referencePitchServoValue),
+                        ServoParameters.defaultParams(true, false, referenceRotationServoValue)
+                )
+            } else {
+                HelioStatParameters(pivotPoint,
+                        ServoParameters.defaultParams(false, true, referencePitchServoValue),
+                        ServoParameters.defaultParams(false, false, referenceRotationServoValue)
+                )
+            }
+        }
+
     }
 
 
