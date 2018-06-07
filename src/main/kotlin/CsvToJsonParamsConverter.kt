@@ -26,16 +26,19 @@ private fun csvToHamParametersJson(lineFields: List<String>): HamParameters {
     val pivotX = lineFields[1].toDouble()
     val pivotY = lineFields[2].toDouble()
     val pivotZ = lineFields[3].toDouble()
-    val targetX = lineFields[4]
-    val targetY = lineFields[5]
-    val targetZ = lineFields[6]
-//    val rotationXAxisSetting = lineFields[7]
-//    val pitchYAxisSetting = lineFields[8]
 
     val pivotPoint = Vector3D(pivotX, pivotY, pivotZ)
-    val helioParams = HelioStatParameters.defaultParams(pivotPoint)
     val axis1servoID = id * 2 - 1
     val axis2servoID = id * 2
+
+    val helioParams = if (lineFields.size > 8) {
+        val referencePitchServoValue = lineFields[7].toInt()
+        val referenceRotationServoValue = lineFields[8].toInt()
+        HelioStatParameters.defaultParams(pivotPoint, referencePitchServoValue, referenceRotationServoValue)
+    } else {
+        HelioStatParameters.defaultParams(pivotPoint)
+    }
+
     return HamParameters(id, axis1servoID, axis2servoID, helioParams)
 }
 
