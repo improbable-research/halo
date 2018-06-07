@@ -3,8 +3,11 @@ import java.io.File
 
 fun main(args: Array<String>) {
 
+    val csvFilePath = "heliostatParams.csv"
+    val jsonFilePath = "heliostatParams.json"
+
     val skipLines = 1
-    val reader = File("heliostatParams.csv").inputStream().bufferedReader(Charsets.UTF_8)
+    val reader = File(csvFilePath).inputStream().bufferedReader(Charsets.UTF_8)
     var lines = reader.readLines()
     reader.close()
     lines = lines.subList(skipLines, lines.size)
@@ -16,7 +19,7 @@ fun main(args: Array<String>) {
     }
 
     val json = Json.toJson(hamParameters)
-    val writer = File("heliostatParams.json").bufferedWriter(Charsets.UTF_8)
+    val writer = File(jsonFilePath).bufferedWriter(Charsets.UTF_8)
     writer.write(json)
     writer.close()
 }
