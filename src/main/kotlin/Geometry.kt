@@ -1,6 +1,8 @@
+import net.e175.klaus.solarpositioning.AzimuthZenithAngle
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D
 
 object Geometry {
+
 
     fun cartesianToSpherical(xyz : Vector3D) : Vector3D {
         val standardSpherical = Vector3D(xyz.norm, Math.acos(xyz.y/xyz.norm), Math.atan2(xyz.z,xyz.x))
@@ -9,6 +11,7 @@ object Geometry {
         }
         return standardSpherical
     }
+
 
     fun standardCartesianToSpherical(xyz : Vector3D) : Vector3D {
         return Vector3D(xyz.norm, Math.acos(xyz.y/xyz.norm), Math.atan2(xyz.z,xyz.x))

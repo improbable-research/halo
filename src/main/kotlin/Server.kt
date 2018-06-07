@@ -39,6 +39,16 @@ class Server {
                 ctx.json(servoSetting)
             }
 
+            post("/navigateSunToPoint") { ctx ->
+                val query = Json.fromJson(ctx.body(), Query.Navigation::class.java)
+                ctx.status(201)
+
+                val navigator = HelioStatNavigator(query.params)
+                val servoSetting = navigator.computeServoSettingFromDirection(Astronomy.getSolarRayCartesian(), query.targetPoint, query.currentServoSetting)
+                ctx.json(servoSetting)
+            }
+
+
             post("/navigatePointToPoint") { ctx ->
                 val query = Json.fromJson(ctx.body(), Query.Navigation::class.java)
                 ctx.status(201)
