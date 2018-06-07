@@ -22,7 +22,7 @@ class HelioStatNavigator {
     constructor(params : HelioStatParameters) {
         servoPitchRange = UniformVertex(-10000.0, 8096.0)
         servoRotationRange = UniformVertex(-10000.0, 8096.0)
-        targetDistance = UniformVertex(-100.0, 100.0)
+        targetDistance = UniformVertex(-1e6, 1e6)
         model = HelioStat(ProbabilisticHelioStatParameters(params))
         servoPitchRange.value = 0.0
         servoRotationRange.value = 0.0
